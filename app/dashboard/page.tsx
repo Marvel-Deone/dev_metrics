@@ -1,7 +1,7 @@
 'use client';
 
 import { useSession } from "next-auth/react";
-import { redirect } from 'next/navigation';
+import { redirect, useRouter } from 'next/navigation';
 import { DashboardHeader } from "@/components/dashboard-header";
 import { ProfileCard } from "@/components/profile-card";
 import { StatsCards } from "@/components/stats-cards";
@@ -10,16 +10,27 @@ import { LanguagesChart } from "@/components/languages-chart";
 import { TopRepositories } from "@/components/top-repositories";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useGitHubData } from "@/hooks/use-github-data";
+import { useEffect } from "react";
 
 export default function DashboardPage() {
     const { data: session, status } = useSession();
+    const router = useRouter()
     console.log('ccccc', session?.user?.login);
-    
+
     const { userData, repos, loading, error } = useGitHubData(session?.user?.login);
+
+    useEffect(() => {
+        if (status === "authenticated") {
+            const hasOnboarded = localStorage.getItem("devmetrics_onboarded");
+            if (!hasOnboarded) {
+                router.push("/onboarding");
+            }
+        }
+    }, [status, router]);
 
     if (status === "loading" || loading) {
         console.log('sessionError:', error, 'sessionData:', session, 'userData:', userData, repos);
-        
+
         return (
             <div className="min-h-screen bg-background">
                 <DashboardHeader />

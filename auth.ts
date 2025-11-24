@@ -17,7 +17,7 @@ export const authConfig = {
       },
       authorization: {
         params: {
-          scope: "read:user user:email"
+          scope: "read:user user:email repo"
         }
       }
     }),

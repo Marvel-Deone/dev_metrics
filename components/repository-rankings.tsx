@@ -61,7 +61,7 @@ export function RepositoryRanking({ repos }: { repos: Repository[] }) {
     }
 
     return (
-        <Card className="col-span-full border border-border/50 bg-gradient-to-br from-card to-card/50 backdrop-blur-sm">
+        <Card className="col-span-full border border-border/50 bg-linear-to-br from-card to-card/50 backdrop-blur-sm">
             <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div>
                     <CardTitle>Repository Ranking</CardTitle>

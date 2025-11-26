@@ -50,8 +50,11 @@ export function useGitHubData(username: string | null | undefined) {
                 setUserData(user);
 
                 // Fetch repositories
+                // const reposRes = await fetch(
+                //     `https://api.github.com/users/${username}/repos?sort=stars&per_page=100`
+                // )
                 const reposRes = await fetch(
-                    `https://api.github.com/users/${username}/repos?sort=stars&per_page=100`
+                    `https://api.github.com/users/${username}/repos?sort=stars&per_page=6`
                 )
                 if (!reposRes.ok) throw new Error('Failed to fetch repositories');
                 const reposData = await reposRes.json();

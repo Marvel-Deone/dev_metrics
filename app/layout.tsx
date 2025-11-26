@@ -9,7 +9,7 @@ const geist = Geist({ subsets: ['latin'], variable: '--font-sans' })
 const geistMono = Geist_Mono({ subsets: ['latin'], variable: '--font-mono' })
 
 export const metadata: Metadata = {
-  title: 'GitHub Dashboard',
+  title: 'DevMetrics - Github Stats Dashboard',
   description: 'Track your GitHub stats with beautiful visualizations',
   icons: {
     icon: '/icon.svg',

@@ -22,10 +22,10 @@ export function ProfileCard({ user }: { user: GitHubUser }) {
   })
 
   return (
-    <Card className="border border-border/50 overflow-hidden bg-gradient-to-br from-card to-card/50 shadow-lg backdrop-blur-sm">
+    <Card className="border border-border/50 overflow-hidden bg-linear-to-br from-card to-card/50 shadow-lg backdrop-blur-sm">
       <CardContent className="p-8">
         <div className="flex flex-col md:flex-row gap-8 items-start md:items-center">
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             <Image
               src={user.avatar_url || "/placeholder.svg"}
               alt={user.login}

@@ -19,7 +19,7 @@ export function TopRepositories({ repos }: { repos: Repository[] }) {
     .slice(0, 6)
 
   return (
-    <Card className="border border-border/50 bg-gradient-to-br from-card to-card/50 backdrop-blur-sm">
+    <Card className="border border-border/50 bg-linear-to-br from-card to-card/50 backdrop-blur-sm">
       <CardHeader>
         <CardTitle>Top Repositories</CardTitle>
         <CardDescription>Your most starred repositories</CardDescription>

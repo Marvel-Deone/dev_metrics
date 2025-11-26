@@ -14,19 +14,7 @@ interface GitHubUser {
     location?: string;
 }
 
-// interface Repository {
-//     name: string;
-//     description?: string;
-//     url: string;
-//     stargazers_count: number;
-//     forks_count: number;
-//     watchers_count: number;
-//     open_issues_count: number;
-//     language?: string;
-//     pushed_at?: string;
-// }
-
-export function useGitHubData(username: string | null | undefined) {
+const useGitHubData = (username: string | null | undefined, accessToken?: string) => {
     const [userData, setUserData] = useState<GitHubUser | null>(null);
     const [repos, setRepos] = useState<Repository[]>([]);
     const [loading, setLoading] = useState(true);
@@ -50,9 +38,6 @@ export function useGitHubData(username: string | null | undefined) {
                 setUserData(user);
 
                 // Fetch repositories
-                // const reposRes = await fetch(
-                //     `https://api.github.com/users/${username}/repos?sort=stars&per_page=100`
-                // )
                 const reposRes = await fetch(
                     `https://api.github.com/users/${username}/repos?sort=stars&per_page=6`
                 )
@@ -71,3 +56,5 @@ export function useGitHubData(username: string | null | undefined) {
 
     return { userData, repos, loading, error }
 }
+
+export { useGitHubData };

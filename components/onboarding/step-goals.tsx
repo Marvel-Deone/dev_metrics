@@ -1,12 +1,12 @@
 "use client"
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Briefcase, LineChart, Users, Trophy } from "lucide-react"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Briefcase, LineChart, Users, Trophy } from "lucide-react";
 
 interface StepGoalsProps {
-  onNext: () => void
+  onNext: () => void;
 }
 
 const GOALS = [
@@ -36,7 +36,7 @@ const GOALS = [
   },
 ]
 
-export function StepGoals({ onNext }: StepGoalsProps) {
+const StepGoals = ({ onNext }: StepGoalsProps) => {
   const [selected, setSelected] = useState<string | null>(null)
 
   return (
@@ -87,3 +87,5 @@ export function StepGoals({ onNext }: StepGoalsProps) {
     </div>
   )
 }
+
+export { StepGoals };

@@ -29,8 +29,7 @@ const RepoDetailPage = () => {
     const { data: session } = useSession();
     const [repoDetails, setRepoDetails] = useState<any>();
 
-    //   const { repos, loading } = useGitHubData(session?.user?.name, session?.accessToken)
-    const { repos, loading } = useGitHubData(session?.user?.name);
+    const { repos, loading } = useGitHubData(session?.user?.name, (session as any)?.accessToken);
     const loginName = session?.user?.login;
     const repoName = params.name as string;
 
@@ -58,7 +57,6 @@ const RepoDetailPage = () => {
         fetchRepoDetails();
     }, [loginName, repoName]);
 
-    const repo = repos?.find((r) => r.name === repoName);
     if (loading) {
         return (
             <div className="min-h-screen bg-background">
@@ -200,7 +198,7 @@ const RepoDetailPage = () => {
                                     <span className="text-muted-foreground flex items-center gap-2">
                                         <Calendar className="w-4 h-4" /> Created
                                     </span>
-                                    {/* <span className="font-medium">{new Date(repo.created_at).toLocaleDateString()}</span> */}
+                                    <span className="font-medium">{new Date(repoDetails.created_at).toLocaleDateString()}</span>
                                 </div>
                                 <div className="flex items-center justify-between">
                                     <span className="text-muted-foreground flex items-center gap-2">

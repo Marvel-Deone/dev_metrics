@@ -18,7 +18,7 @@ const TASKS = [
     "Fetch star/fork metrics",
 ]
 
-export function StepFetch({ onNext }: StepFetchProps) {
+const StepFetch = ({ onNext }: StepFetchProps) => {
     const [progress, setProgress] = useState(0);
     const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
     const hasAdvanced = useRef(false);
@@ -95,3 +95,5 @@ export function StepFetch({ onNext }: StepFetchProps) {
         </div>
     )
 }
+
+export { StepFetch };

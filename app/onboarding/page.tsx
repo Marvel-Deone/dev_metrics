@@ -9,7 +9,7 @@ import { StepGoals } from "@/components/onboarding/step-goals";
 import { StepSuccess } from "@/components/onboarding/step-success";
 import { DashboardHeader } from "@/components/dashboard-header";
 
-export default function OnboardingPage() {
+const OnboardingPage = () => {
     const [step, setStep] = useState(1);
     const router = useRouter();
     const { data: session, status } = useSession();
@@ -43,3 +43,5 @@ export default function OnboardingPage() {
         </div>
     )
 }
+
+export default OnboardingPage;

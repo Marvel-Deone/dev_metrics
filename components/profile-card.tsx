@@ -15,7 +15,7 @@ interface GitHubUser {
   location?: string
 }
 
-export function ProfileCard({ user }: { user: GitHubUser }) {
+const ProfileCard = ({ user }: { user: GitHubUser }) => {
   const joinDate = new Date(user.created_at).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
@@ -70,3 +70,5 @@ export function ProfileCard({ user }: { user: GitHubUser }) {
     </Card>
   )
 }
+
+export { ProfileCard };

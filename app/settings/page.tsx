@@ -1,39 +1,39 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
-import { DashboardHeader } from "@/components/dashboard-header"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { Switch } from "@/components/ui/switch"
-import { Textarea } from "@/components/ui/textarea"
-import { useTheme } from "next-themes"
-import { Download, Share2, User, Shield, Bell, Trash2 } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
-import { Toaster } from "@/components/ui/toaster"
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { DashboardHeader } from "@/components/dashboard-header";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import { useTheme } from "next-themes";
+import { Download, Share2, User, Shield, Bell, Trash2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Toaster } from "@/components/ui/toaster";
 
-export default function SettingsPage() {
-  const { data: session, status } = useSession()
-  const router = useRouter()
-  const { theme, setTheme } = useTheme()
-  const { toast } = useToast()
-  const [isPublic, setIsPublic] = useState(false)
-  const [emailNotifications, setEmailNotifications] = useState(true)
+ const SettingsPage = () => {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const { theme, setTheme } = useTheme();
+  const { toast } = useToast();
+  const [isPublic, setIsPublic] = useState(false);
+  const [emailNotifications, setEmailNotifications] = useState(true);
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push("/auth/signin")
+      router.push("/auth/signin");
     }
-  }, [status, router])
+  }, [status, router]);
 
   const handleExport = (format: string) => {
     toast({
       title: "Export Started",
       description: `Generating your ${format} report... This may take a moment.`,
-    })
+    });
     // Simulate export delay
     setTimeout(() => {
       toast({
@@ -41,7 +41,7 @@ export default function SettingsPage() {
         description: `Your ${format} report has been downloaded successfully.`,
         variant: "default", // Corrected variant
       })
-    }, 2000)
+    }, 2000);
   }
 
   const handlePublicToggle = (checked: boolean) => {
@@ -50,16 +50,16 @@ export default function SettingsPage() {
       toast({
         title: "Profile Published",
         description: "Your developer profile is now viewable by the public.",
-      })
+      });
     } else {
       toast({
         title: "Profile Private",
         description: "Your developer profile is now hidden from the public.",
-      })
+      });
     }
   }
 
-  if (status === "loading") return null
+  if (status === "loading") return null;
 
   return (
     <div className="min-h-screen bg-background">
@@ -208,3 +208,5 @@ export default function SettingsPage() {
     </div>
   )
 }
+
+export default SettingsPage;

@@ -1,11 +1,11 @@
 'use client'
 
-import { signIn } from "next-auth/react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Github } from 'lucide-react'
+import { signIn } from "next-auth/react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Github } from 'lucide-react';
 
-export default function SignIn() {
+const SignIn = () => {
   return (
     <div className="min-h-screen bg-linear-to-br from-background via-background to-background flex items-center justify-center p-4">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -47,3 +47,5 @@ export default function SignIn() {
     </div>
   )
 }
+
+export default SignIn;

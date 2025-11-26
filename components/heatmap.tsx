@@ -3,21 +3,21 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
-export function Heatmap() {
+const Heatmap = () => {
   // Generate 365 days of mock data
-  const today = new Date()
+  const today = new Date();
   const data = Array.from({ length: 365 }).map((_, i) => {
-    const date = new Date(today)
-    date.setDate(date.getDate() - (364 - i))
+    const date = new Date(today);
+    date.setDate(date.getDate() - (364 - i));
 
     // Random intensity 0-4
     // More weight to 0 and 1 to make it realistic
-    const rand = Math.random()
-    let intensity = 0
-    if (rand > 0.8) intensity = 4
-    else if (rand > 0.6) intensity = 3
-    else if (rand > 0.4) intensity = 2
-    else if (rand > 0.2) intensity = 1
+    const rand = Math.random();
+    let intensity = 0;
+    if (rand > 0.8) intensity = 4;
+    else if (rand > 0.6) intensity = 3;
+    else if (rand > 0.4) intensity = 2;
+    else if (rand > 0.2) intensity = 1;
 
     return {
       date,
@@ -27,17 +27,17 @@ export function Heatmap() {
   })
 
   // Group by weeks
-  const weeks = []
-  let currentWeek: any[] = []
+  const weeks = [];
+  let currentWeek: any[] = [];
 
   data.forEach((day, i) => {
     if (day.date.getDay() === 0 && currentWeek.length > 0) {
-      weeks.push(currentWeek)
-      currentWeek = []
+      weeks.push(currentWeek);
+      currentWeek = [];
     }
-    currentWeek.push(day)
+    currentWeek.push(day);
   })
-  if (currentWeek.length > 0) weeks.push(currentWeek)
+  if (currentWeek.length > 0) weeks.push(currentWeek);
 
   const getIntensityClass = (intensity: number) => {
     switch (intensity) {
@@ -97,3 +97,5 @@ export function Heatmap() {
     </Card>
   )
 }
+
+export { Heatmap };

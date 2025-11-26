@@ -13,7 +13,7 @@ interface Repository {
   language?: string
 }
 
-export function TopRepositories({ repos }: { repos: Repository[] }) {
+const TopRepositories = ({ repos }: { repos: Repository[] }) => {
   const topRepos = repos
     .sort((a, b) => b.stargazers_count - a.stargazers_count)
     .slice(0, 6)
@@ -72,3 +72,5 @@ export function TopRepositories({ repos }: { repos: Repository[] }) {
     </Card>
   )
 }
+
+export { TopRepositories };

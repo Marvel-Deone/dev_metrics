@@ -4,7 +4,7 @@ import { Line, LineChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart"
 
-export function ProductivityTrend() {
+const ProductivityTrend = () => {
   const data = [
     { week: "Week 1", score: 45 },
     { week: "Week 2", score: 52 },
@@ -60,3 +60,5 @@ export function ProductivityTrend() {
     </Card>
   )
 }
+
+export { ProductivityTrend };

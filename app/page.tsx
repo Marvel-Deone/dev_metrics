@@ -3,7 +3,7 @@
 import { useSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
 
-export default function Home() {
+const Home = () => {
   const { status } = useSession()
 
   if (status === 'authenticated') {
@@ -14,3 +14,5 @@ export default function Home() {
 
   return null;
 }
+
+export default Home;

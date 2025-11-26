@@ -1,5 +1,6 @@
 'use client';
 
+import { Repository } from '@/types/repository';
 import { useEffect, useState } from 'react';
 
 interface GitHubUser {
@@ -13,17 +14,17 @@ interface GitHubUser {
     location?: string;
 }
 
-interface Repository {
-    name: string;
-    description?: string;
-    url: string;
-    stargazers_count: number;
-    forks_count: number;
-    watchers_count: number;
-    open_issues_count: number;
-    language?: string;
-    pushed_at?: string;
-}
+// interface Repository {
+//     name: string;
+//     description?: string;
+//     url: string;
+//     stargazers_count: number;
+//     forks_count: number;
+//     watchers_count: number;
+//     open_issues_count: number;
+//     language?: string;
+//     pushed_at?: string;
+// }
 
 export function useGitHubData(username: string | null | undefined) {
     const [userData, setUserData] = useState<GitHubUser | null>(null);

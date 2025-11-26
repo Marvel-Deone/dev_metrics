@@ -11,11 +11,12 @@ import { TopRepositories } from "@/components/top-repositories";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useGitHubData } from "@/hooks/use-github-data";
 import { useEffect } from "react";
+import { Heatmap } from "@/components/heatmap";
+import { RepositoryRanking } from "@/components/repository-rankings";
 
 export default function DashboardPage() {
     const { data: session, status } = useSession();
     const router = useRouter()
-    console.log('ccccc', session?.user?.login);
 
     const { userData, repos, loading, error } = useGitHubData(session?.user?.login);
 
@@ -29,8 +30,6 @@ export default function DashboardPage() {
     }, [status, router]);
 
     if (status === "loading" || loading) {
-        console.log('sessionError:', error, 'sessionData:', session, 'userData:', userData, repos);
-
         return (
             <div className="min-h-screen bg-background">
                 <DashboardHeader />
@@ -75,6 +74,9 @@ export default function DashboardPage() {
                     {/* Stats Cards */}
                     <StatsCards repos={repos} />
 
+                    {/* Heatmap Section */}
+                    <Heatmap />
+
                     {/* Charts Section */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {repos && repos.length > 0 && (
@@ -84,6 +86,9 @@ export default function DashboardPage() {
                             </>
                         )}
                     </div>
+
+                    {/* Repository Ranking */}
+                    {repos && repos.length > 0 && <RepositoryRanking repos={repos} />}
 
                     {/* Top Repositories */}
                     {repos && repos.length > 0 && <TopRepositories repos={repos} />}

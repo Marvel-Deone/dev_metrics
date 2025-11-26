@@ -25,7 +25,6 @@ export default function OnboardingPage() {
     }
 
     const handleComplete = () => {
-        console.log('seteof:', step);
         localStorage.setItem("devmetrics_onboarded", "true");
         router.push("/dashboard");
     }

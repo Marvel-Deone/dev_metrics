@@ -29,8 +29,8 @@ const TopRepositories = ({ repos }: { repos: Repository[] }) => {
           {topRepos.map((repo) => (
             <a
               key={repo.name}
-              href={repo.url}
-              target="_blank"
+              href={`/dashboard/repo/${repo.name}`}
+              // target="_blank"
               rel="noopener noreferrer"
               className="p-4 rounded-lg border border-border/50 bg-background/50 hover:bg-background hover:border-primary/50 transition-all duration-200 group"
             >

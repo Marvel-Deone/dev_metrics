@@ -21,7 +21,7 @@ const SignIn = () => {
                 <Github className="w-8 h-8 text-primary" />
               </div>
             </div>
-            <CardTitle className="text-3xl font-bold">GitHub Dashboard</CardTitle>
+            <CardTitle className="text-3xl font-bold">DevMetrics</CardTitle>
             <CardDescription>
               Connect with GitHub to view your stats and insights
             </CardDescription>

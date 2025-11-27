@@ -12,7 +12,7 @@ interface StepWelcomeProps {
     }
 }
 
-export function StepWelcome({ onNext, user }: StepWelcomeProps) {
+const StepWelcome = ({ onNext, user }: StepWelcomeProps) => {
     return (
         <div className="flex flex-col items-center justify-center min-h-[60vh] animate-in fade-in zoom-in duration-500">
             <Card className="w-full max-w-lg text-center border-primary/20 bg-linear-to-b from-background to-secondary/10">
@@ -34,3 +34,5 @@ export function StepWelcome({ onNext, user }: StepWelcomeProps) {
         </div>
     )
 }
+
+export { StepWelcome };

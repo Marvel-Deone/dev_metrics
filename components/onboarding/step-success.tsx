@@ -10,7 +10,7 @@ interface StepSuccessProps {
   onComplete: () => void
 }
 
-export function StepSuccess({ onComplete }: StepSuccessProps) {
+const StepSuccess = ({ onComplete }: StepSuccessProps) => {
   useEffect(() => {
     const duration = 3 * 1000
     const animationEnd = Date.now() + duration
@@ -69,3 +69,5 @@ export function StepSuccess({ onComplete }: StepSuccessProps) {
     </div>
   )
 }
+
+export { StepSuccess };

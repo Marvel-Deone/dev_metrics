@@ -61,15 +61,25 @@ export function Heatmap() {
       </CardHeader>
       <CardContent>
         <div className="w-full overflow-x-auto pb-4">
-          <div className="flex gap-1 min-w-max">
+          <div
+            className="grid gap-[3px] min-w-max lg:min-w-0 lg:w-full"
+            style={{
+              gridTemplateColumns: `repeat(${weeks.length}, minmax(8px, 1fr))`,
+            }}
+          >
             {weeks.map((week, i) => (
-              <div key={i} className="flex flex-col gap-1">
+              <div key={i} className="grid gap-[3px]" style={{ gridTemplateRows: "repeat(7, 1fr)" }}>
+                {i === 0 &&
+                  week.length < 7 &&
+                  Array.from({ length: 7 - week.length }).map((_, k) => (
+                    <div key={`pad-${k}`} className="aspect-square rounded-sm invisible" />
+                  ))}
                 {week.map((day, j) => (
                   <TooltipProvider key={j}>
                     <Tooltip>
-                      <TooltipTrigger>
+                      <TooltipTrigger asChild>
                         <div
-                          className={`w-3 h-3 rounded-sm transition-colors hover:ring-1 ring-offset-1 ring-foreground/20 ${getIntensityClass(day.intensity)}`}
+                          className={`aspect-square min-w-[8px] min-h-[8px] max-w-[14px] max-h-[14px] rounded-sm transition-colors hover:ring-1 ring-offset-1 ring-foreground/20 ${getIntensityClass(day.intensity)}`}
                         />
                       </TooltipTrigger>
                       <TooltipContent>

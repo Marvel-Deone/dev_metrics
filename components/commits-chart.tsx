@@ -9,7 +9,7 @@ interface Repository {
   pushed_at?: string
 }
 
-export function CommitsChart({ repos }: { repos: Repository[] }) {
+const CommitsChart = ({ repos }: { repos: Repository[] }) => {
   // Simulate commits per week data based on repos
   const commitsData = Array.from({ length: 12 }, (_, i) => ({
     week: `W${i + 1}`,
@@ -46,3 +46,5 @@ export function CommitsChart({ repos }: { repos: Repository[] }) {
     </Card>
   )
 }
+
+export { CommitsChart };

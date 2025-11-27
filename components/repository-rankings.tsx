@@ -22,7 +22,7 @@ import { Repository } from "@/types/repository"
 
 type SortKey = "stars" | "forks" | "activity" | "updated"
 
-export function RepositoryRanking({ repos }: { repos: Repository[] }) {
+const RepositoryRanking = ({ repos }: { repos: Repository[] }) => {
     const [sortKey, setSortKey] = useState<SortKey>("stars")
     const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc")
 
@@ -151,3 +151,5 @@ export function RepositoryRanking({ repos }: { repos: Repository[] }) {
         </Card>
     )
 }
+
+export { RepositoryRanking };

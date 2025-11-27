@@ -10,7 +10,7 @@ interface Repository {
   language?: string
 }
 
-export function StatsCards({ repos }: { repos: Repository[] }) {
+const StatsCards = ({ repos }: { repos: Repository[] }) => {
   const stats = repos.reduce(
     (acc, repo) => ({
       totalStars: acc.totalStars + repo.stargazers_count,
@@ -78,3 +78,5 @@ export function StatsCards({ repos }: { repos: Repository[] }) {
     </div>
   )
 }
+
+export { StatsCards };

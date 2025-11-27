@@ -20,7 +20,6 @@ export const toast = ({ title, description, variant, ...props }: ToastProps) => 
   }
 }
 
-// Export useToast hook for compatibility
 export const useToast = () => {
   return {
     toast,

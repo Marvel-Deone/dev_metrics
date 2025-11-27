@@ -8,7 +8,7 @@ interface Repository {
   language?: string
 }
 
-export function LanguagesChart({ repos }: { repos: Repository[] }) {
+const LanguagesChart = ({ repos }: { repos: Repository[] }) => {
   const languageCounts = repos.reduce(
     (acc, repo) => {
       const lang = repo.language || "Other"
@@ -89,3 +89,5 @@ export function LanguagesChart({ repos }: { repos: Repository[] }) {
     </Card>
   )
 }
+
+export { LanguagesChart };

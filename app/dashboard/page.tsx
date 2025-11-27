@@ -14,7 +14,7 @@ import { useEffect } from "react";
 import { Heatmap } from "@/components/heatmap";
 import { RepositoryRanking } from "@/components/repository-rankings";
 
-export default function DashboardPage() {
+const DashboardPage = () => {
     const { data: session, status } = useSession();
     const router = useRouter()
 
@@ -97,3 +97,5 @@ export default function DashboardPage() {
         </div>
     )
 }
+
+export default DashboardPage;

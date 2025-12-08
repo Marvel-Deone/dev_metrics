@@ -111,32 +111,77 @@ interface GitHubUser {
   location?: string
 }
 
-// interface Repository {
-//   name: string
-//   description?: string
-//   url: string
-//   stargazers_count: number
-//   forks_count: number
-//   watchers_count: number
-//   open_issues_count: number
-//   language?: string
-//   pushed_at?: string
-// }
+interface CommitTrend {
+  day: string;
+  commits: number;
+}
 
 export function useGitHubData(username: string | null | undefined, accessToken?: string) {
-  const [userData, setUserData] = useState<GitHubUser | null>(null)
-  const [repos, setRepos] = useState<Repository[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [userData, setUserData] = useState<GitHubUser | null>(null);
+  const [repos, setRepos] = useState<Repository[]>([]);
+  const [commitTrends, setCommitTrends] = useState<CommitTrend[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [lastSynced, setLastSynced] = useState<Date | null>(() => {
     if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("devmetrics_last_synced")
-      return stored ? new Date(stored) : null
+      const stored = localStorage.getItem("devmetrics_last_synced");
+      return stored ? new Date(stored) : null;
     }
-    return null
+    return null;
   })
-  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
+  async function fetchCommitTrends(username: string, token?: string): Promise<CommitTrend[]> {
+    const since = new Date();
+    since.setDate(since.getDate() - 7);
+
+    const headers: HeadersInit = token
+      ? { Authorization: `Bearer ${token}` }
+      : {};
+
+    // Fetch all repos
+    const reposRes = await fetch(
+      `https://api.github.com/users/${username}/repos?per_page=100`,
+      { headers }
+    );
+
+    const repos = await reposRes.json();
+
+    // Initialize last 7 days
+    const dayLabels = [...Array(7)].map((_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (6 - i));
+      return d.toLocaleDateString("en-US", { weekday: "short" });
+    });
+
+    const commitMap: Record<string, number> = {};
+    dayLabels.forEach((d) => (commitMap[d] = 0));
+
+    // Fetch commits for each repo
+    const commitFetches = repos.map(async (repo: any) => {
+      // const url = `https://api.github.com/repos/${username}/${repo.name}/commits?since=${since.toISOString()}`;
+      const url = `https://api.github.com/repos/${repo.owner.login}/${repo.name}/commits?author=${username}&since=${since.toISOString()}`;
+
+      const commitRes = await fetch(url, { headers });
+      if (!commitRes.ok) return;
+
+      const commits = await commitRes.json();
+
+      commits.forEach((c: any) => {
+        const date = new Date(c.commit.author.date);
+        const key = date.toLocaleDateString("en-US", { weekday: "short" });
+        if (commitMap[key] !== undefined) commitMap[key] += 1;
+      });
+    });
+
+    await Promise.all(commitFetches);
+
+    return Object.entries(commitMap).map(([day, commits]) => ({
+      day,
+      commits,
+    }));
+  }
+  // Main data fetching function
   const fetchData = useCallback(
     async (isManualRefresh = false) => {
       if (!username) {
@@ -155,10 +200,12 @@ export function useGitHubData(username: string | null | undefined, accessToken?:
         const headers: HeadersInit = accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
 
         // Fetch user data
-        const userRes = await fetch(`https://api.github.com/users/${username}`, { headers })
-        if (!userRes.ok) throw new Error("Failed to fetch user data")
-        const user = await userRes.json()
-        setUserData(user)
+        const userRes = await fetch(`https://api.github.com/users/${username}`, { headers });
+        if (!userRes.ok) throw new Error("Failed to fetch user data");
+        const user = await userRes.json();
+
+        setUserData(user);
+        console.log('github-data:', user);
 
         // Fetch repositories
         const reposRes = await fetch(`https://api.github.com/users/${username}/repos?sort=stars&per_page=100`, {
@@ -167,6 +214,10 @@ export function useGitHubData(username: string | null | undefined, accessToken?:
         if (!reposRes.ok) throw new Error("Failed to fetch repositories")
         const reposData = await reposRes.json()
         setRepos(reposData)
+
+        // Fetch commit trends
+        const trends = await fetchCommitTrends(username, accessToken);
+        setCommitTrends(trends);
 
         // Update last synced time
         const now = new Date()
@@ -186,11 +237,11 @@ export function useGitHubData(username: string | null | undefined, accessToken?:
 
   useEffect(() => {
     fetchData()
-  }, [fetchData])
+  }, [fetchData]);
 
   const refetch = useCallback(() => {
     fetchData(true)
-  }, [fetchData])
+  }, [fetchData]);
 
-  return { userData, repos, loading, error, lastSynced, isRefreshing, refetch }
+  return { userData, repos, commitTrends, loading, error, lastSynced, isRefreshing, refetch }
 }

@@ -1,6 +1,6 @@
-'use client';
+"use client"
 
-// import type React from "react"
+import type React from "react"
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
@@ -36,6 +36,8 @@ import {
     RefreshCw,
     Sun,
     Moon,
+    Menu,
+    X,
 } from "lucide-react"
 import { useTheme } from "next-themes"
 import {
@@ -52,10 +54,12 @@ import {
     PieChart,
     Pie,
 } from "recharts"
-import { signOut, useSession } from "next-auth/react"
+import { useSession } from "next-auth/react"
 import { useGitHubData } from "@/hooks/use-github-data"
 import { DashboardHeader } from "@/components/dashboard-header"
-import { useGithubMetrics } from "@/hooks/useGithubMetrics";
+import { useGithubMetrics } from "@/hooks/useGithubMetrics"
+// import { useAuth } from "@/lib/auth-context"
+// import { ProtectedRoute } from "@/components/protected-route"
 
 // Mock data
 const commitTrendsData = [
@@ -150,20 +154,29 @@ const CustomPieTooltip = ({
 }
 
 function DashboardContent() {
-    const [mounted, setMounted] = useState(false);
-
-    const { theme, setTheme } = useTheme();
+    const { theme, setTheme } = useTheme()
+    //   const { user, signOut } = useAuth()
     const { data: session, status } = useSession();
-    const { userData: user, repos, commitTrends, loading, error } = useGitHubData(session?.user?.login, (session as any)?.accessToken);
 
-    const username = session?.user?.login || ""
+    const { userData: user, repos, commitTrends, loading, error } = useGitHubData(session?.user?.login);
+    console.log('commutTrends:', commitTrends);
+
+    const username = session?.user?.login || "";
     const metrics = useGithubMetrics("Marvel-Deone");
 
-    console.log('reposDash:', repos, 'commitTrends:', commitTrends);
-    
+    const [mounted, setMounted] = useState(false)
+    const [isRefreshing, setIsRefreshing] = useState(false)
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
     useEffect(() => {
-        setMounted(true);
-    }, []);
+        setMounted(true)
+    }, [])
+
+    const handleRefresh = async () => {
+        setIsRefreshing(true)
+        await new Promise((resolve) => setTimeout(resolve, 1500))
+        setIsRefreshing(false)
+    }
 
     const getHeatmapColor = (value: number) => {
         if (value === 0) return "bg-muted"
@@ -178,10 +191,11 @@ function DashboardContent() {
 
     return (
         <div className="min-h-screen bg-background">
+            {/* Header */}
             <DashboardHeader />
 
             {/* Main Content */}
-            <main className="p-6 max-w-[1600px] mx-auto">
+            <main className="p-4 md:p-6 max-w-7xl mx-auto">
                 {/* Welcome Section */}
                 <div className="mb-8 animate-fade-in">
                     <h1 className="text-2xl font-bold text-foreground mb-1">
@@ -215,9 +229,9 @@ function DashboardContent() {
                             </Badge>
                         </CardHeader>
                         <CardContent>
-                            <div className="w-full overflow-hidden h-[280px]">
+                            <div className="h-[280px]">
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <AreaChart data={commitTrends}>
+                                    <AreaChart data={commitTrendsData}>
                                         <defs>
                                             <linearGradient id="commitGradient" x1="0" y1="0" x2="0" y2="1">
                                                 <stop offset="5%" stopColor="oklch(0.65 0.2 155)" stopOpacity={0.3} />
@@ -256,7 +270,7 @@ function DashboardContent() {
                             <CardDescription>Code distribution by language</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="w-full overflow-hidden h-[180px] mb-4">
+                            <div className="h-[180px] mb-4">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <PieChart>
                                         <Pie
@@ -302,7 +316,7 @@ function DashboardContent() {
                             <CardDescription>Pull request statistics</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="w-full overflow-hiddenh-[200px]">
+                            <div className="h-[200px]">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={prActivityData}>
                                         <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.3 0.01 285)" opacity={0.3} />
@@ -384,9 +398,9 @@ function DashboardContent() {
                 </div>
 
                 {/* Contribution Heatmap & Recent Activity */}
-                <div className="grid lg:grid-cols-3 gap-6 min-w-0">
+                <div className="grid lg:grid-cols-3 gap-6">
                     {/* Contribution Heatmap */}
-                    <Card className="lg:col-span-2 min-w-0 animate-slide-up stagger-5 border-border/50">
+                    <Card className="lg:col-span-2 animate-slide-up stagger-5 border-border/50">
                         <CardHeader className="pb-2">
                             <CardTitle className="text-lg font-semibold flex items-center gap-2">
                                 <Calendar className="h-5 w-5 text-primary" />
@@ -396,7 +410,7 @@ function DashboardContent() {
                         </CardHeader>
                         <CardContent>
                             <div className="overflow-x-auto pb-2">
-                                <div className="flex gap-1 w-max">
+                                <div className="flex gap-1 min-w-[800px]">
                                     {Array.from({ length: 52 }, (_, weekIndex) => (
                                         <div key={weekIndex} className="flex flex-col gap-1">
                                             {Array.from({ length: 7 }, (_, dayIndex) => {

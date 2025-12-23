@@ -153,7 +153,7 @@ export function DashboardHeader() {
           {/* User dropdown - desktop */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="gap-2 pl-2 hidden sm:flex">
+              <Button variant="ghost" className="gap-2 pl-2 hidden sm:flex cursor-pointer!">
                 <Avatar className="h-7 w-7">
                   <AvatarImage src={user?.avatar_url || "/developer-avatar.png"} />
                   <AvatarFallback>{user?.name?.charAt(0) || "U"}</AvatarFallback>
@@ -163,12 +163,12 @@ export function DashboardHeader() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer">
                 <Settings className="h-4 w-4 mr-2" />
                 Settings
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive" onClick={() => signOut({ callbackUrl: "/auth/signin" })}>
+              <DropdownMenuItem className="text-destructive cursor-pointer" onClick={() => signOut({ callbackUrl: "/auth/signin" })}>
                 <LogOut className="h-4 w-4 mr-2" />
                 Sign out
               </DropdownMenuItem>

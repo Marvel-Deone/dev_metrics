@@ -15,12 +15,17 @@ export function DashboardHeader() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const { userData: user, repos, loading, error } = useGitHubData(session?.user?.login);
-
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  // const { userData: user, repos, loading, error } = useGitHubData(session?.user?.login);
+  const { user, repos, loading, error } = useGitHubData();
+  console.log('sessionhfhf:', session?.user);
+  
   useEffect(() => {
     setMounted(true)
   }, []);
+
+  console.log('userDashboard:', user);
+
 
   const handleRefresh = async () => {
     setIsRefreshing(true)
@@ -155,10 +160,10 @@ export function DashboardHeader() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="gap-2 pl-2 hidden sm:flex cursor-pointer!">
                 <Avatar className="h-7 w-7">
-                  <AvatarImage src={user?.avatar_url || "/developer-avatar.png"} />
-                  <AvatarFallback>{user?.name?.charAt(0) || "U"}</AvatarFallback>
+                  <AvatarImage src={user?.avatarUrl || "/developer-avatar.png"} />
+                  <AvatarFallback>{user?.login?.charAt(0) || "U"}</AvatarFallback>
                 </Avatar>
-                <span className="hidden md:inline text-sm max-w-[120px] truncate">{user?.name || "User"}</span>
+                <span className="hidden md:inline text-sm max-w-[120px] truncate">{user?.login || "User"}</span>
                 <ChevronDown className="h-4 w-4 text-muted-foreground" />
               </Button>
             </DropdownMenuTrigger>
@@ -214,7 +219,7 @@ export function DashboardHeader() {
             <div className="border-t border-border my-2" />
             <div className="flex items-center gap-3 px-3 py-2">
               <Avatar className="h-8 w-8">
-                <AvatarImage src={user?.avatar_url || "/developer-avatar.png"} />
+                {/* <AvatarImage src={user?.avatar_url || "/developer-avatar.png"} /> */}
                 <AvatarFallback>{user?.name?.charAt(0) || "U"}</AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">

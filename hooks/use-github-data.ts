@@ -1,194 +1,142 @@
 "use client";
 
-import { Repository } from "@/types/repository";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-interface GitHubUser {
-  login: string;
+/* ===================== TYPES ===================== */
+
+export interface Repository {
   name: string;
-  bio: string;
-  avatar_url: string;
-  followers: number;
-  public_repos: number;
-  created_at: string;
-  location?: string;
+  url: string;
+  isPrivate: boolean;
+  stargazerCount: number;
+  forkCount: number;
+  updatedAt: string;
 }
 
-interface CommitTrend {
+export interface GitHubUser {
+  login: string;
+  name: string;
+  avatarUrl: string;
+  bio: string;
+  followers: number;
+}
+
+export interface CommitTrend {
   day: string;
   commits: number;
 }
 
-// Cache expires every 10 minutes (can adjust)
-const CACHE_DURATION = 1000 * 60 * 10;
+export interface LanguageStat {
+  language: string;
+  percentage: number;
+}
 
-export function useGitHubData(
-  username: string | null | undefined,
-  accessToken?: string
-) {
-  const [userData, setUserData] = useState<GitHubUser | null>(null);
+export interface ContributionDay {
+  date: string;
+  count: number;
+  color: string;
+}
+
+/* ===================== HOOK ===================== */
+
+export function useGitHubData() {
+  console.log("useGitHubData: hook init");
+
+  const fetchedRef = useRef(false);
+
+  const [user, setUser] = useState<GitHubUser | null>(null);
   const [repos, setRepos] = useState<Repository[]>([]);
+  const [languages, setLanguages] = useState<LanguageStat[]>([]);
   const [commitTrends, setCommitTrends] = useState<CommitTrend[]>([]);
-
+  const [totalCommits7Days, setTotalCommits7Days] = useState(0);
+  const [pullRequests, setPullRequests] = useState(0);
+  const [contributionCalendar, setContributionCalendar] =
+    useState<ContributionDay[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [lastSynced, setLastSynced] = useState<Date | null>(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("devmetrics_last_synced");
-      return stored ? new Date(stored) : null;
+  const fetchProfile = async () => {
+    console.log("fetchProfile: start");
+
+    const res = await fetch("/api/github/profile");
+
+    console.log("fetchProfile: response", res.status);
+
+    if (!res.ok) {
+      throw new Error("Not authenticated or profile fetch failed");
     }
-    return null;
-  });
 
-  //  Load cached data instantly on first mount
-  useEffect(() => {
-    if (typeof window === "undefined") return;
+    const data = await res.json();
+    console.log("fetchProfisle: data", data, data.languages);
 
-    const cachedUser = localStorage.getItem("devmetrics_user");
-    const cachedRepos = localStorage.getItem("devmetrics_repos");
-    const cachedCommits = localStorage.getItem("devmetrics_commits");
+    setUser(data.user);
+    setRepos(data.repos);
+    setLanguages(data.languages);
+    setPullRequests(data.pullRequests);
+    setContributionCalendar(data.contributions);
+  };
 
-    if (cachedUser) setUserData(JSON.parse(cachedUser));
-    if (cachedRepos) setRepos(JSON.parse(cachedRepos));
-    if (cachedCommits) setCommitTrends(JSON.parse(cachedCommits));
+  const fetchCommits = async () => {
+    console.log("fetchCommits: start");
 
-    setLoading(false);
+    const res = await fetch("/api/github/commits");
+
+    console.log("fetchCommits: response", res.status);
+
+    if (!res.ok) {
+      throw new Error("Commit fetch failed");
+    }
+
+    const data = await res.json();
+    console.log("fetchCommits: data", data);
+
+    setCommitTrends(data.trends);
+    setTotalCommits7Days(data.total);
+  };
+
+  const fetchAll = useCallback(async () => {
+    console.log("fetchAll: called");
+
+    if (fetchedRef.current) {
+      console.log("fetchAll: already fetched, skipping");
+      return;
+    }
+
+    fetchedRef.current = true;
+
+    try {
+      setLoading(true);
+      console.log("fetchAll: loading");
+
+      await Promise.all([
+        fetchProfile(),
+        fetchCommits(),
+      ]);
+
+      console.log("fetchAll: success");
+    } catch (err: any) {
+      console.error("fetchAll error:", err);
+      setError(err.message || "Failed to load GitHub data");
+    } finally {
+      setLoading(false);
+      console.log("fetchAll: done");
+    }
   }, []);
 
-  // Fetch commit trends helper
-  async function fetchCommitTrends(
-    username: string,
-    token?: string
-  ): Promise<CommitTrend[]> {
-    const since = new Date();
-    since.setDate(since.getDate() - 7);
-
-    const headers: HeadersInit = token
-      ? { Authorization: `Bearer ${token}` }
-      : {};
-
-    // Fetch all repos
-    const reposRes = await fetch(
-      `https://api.github.com/users/${username}/repos?per_page=100`,
-      { headers }
-    );
-    if (!reposRes.ok) return [];
-    const repos = await reposRes.json();
-
-    // Prepare 7-day labels
-    const dayLabels = [...Array(7)].map((_, i) => {
-      const d = new Date();
-      d.setDate(d.getDate() - (6 - i));
-      return d.toLocaleDateString("en-US", { weekday: "short" });
-    });
-
-    const commitMap: Record<string, number> = {};
-    dayLabels.forEach((d) => (commitMap[d] = 0));
-
-    // Fetch commits for each repo
-    const commitFetches = repos.map(async (repo: any) => {
-      const url = `https://api.github.com/repos/${repo.owner.login}/${repo.name}/commits?since=${since.toISOString()}`;
-      const res = await fetch(url, { headers });
-      if (!res.ok) return;
-
-      const commits = await res.json();
-      commits.forEach((c: any) => {
-        const d = new Date(c.commit.author.date);
-        const key = d.toLocaleDateString("en-US", { weekday: "short" });
-        if (commitMap[key] !== undefined) commitMap[key] += 1;
-      });
-      console.log('commitsff:', commits);
-    });
-
-    await Promise.all(commitFetches);
-
-    return Object.entries(commitMap).map(([day, commits]) => ({
-      day,
-      commits,
-    }));
-  }
-
-  // Main GitHub fetcher with caching
-  const fetchData = useCallback(
-    async (isManualRefresh = false) => {
-      if (!username) return;
-
-      try {
-        // Use cached data when not refreshing
-        if (!isManualRefresh && lastSynced) {
-          const age = Date.now() - lastSynced.getTime();
-          if (age < CACHE_DURATION) {
-            console.log("⏳ Using cached GitHub data — no API call");
-            return;
-          }
-        }
-
-        isManualRefresh ? setIsRefreshing(true) : setLoading(true);
-        setError(null);
-
-        const headers: HeadersInit = accessToken
-          ? { Authorization: `Bearer ${accessToken}` }
-          : {};
-
-        // Fetch user
-        const userRes = await fetch(
-          `https://api.github.com/users/${username}`,
-          { headers }
-        );
-        if (!userRes.ok) throw new Error("Failed to fetch user data");
-        const user = await userRes.json();
-        if (!user.login) throw new Error("Invalid GitHub user response");
-        setUserData(user);
-
-        // Fetch repos
-        const reposRes = await fetch(
-          `https://api.github.com/users/${username}/repos?sort=stars&per_page=100`,
-          { headers }
-        );
-        if (!reposRes.ok) throw new Error("Failed to fetch repos");
-        const repoData = await reposRes.json();
-        setRepos(repoData);
-
-        // Fetch commit trends
-        const trends = await fetchCommitTrends(username, accessToken);
-        setCommitTrends(trends);
-        console.log('commitTrendsff:', trends);
-
-        // Save to cache
-        const now = new Date();
-        setLastSynced(now);
-
-        if (typeof window !== "undefined") {
-          localStorage.setItem("devmetrics_user", JSON.stringify(user));
-          localStorage.setItem("devmetrics_repos", JSON.stringify(repoData));
-          localStorage.setItem("devmetrics_commits", JSON.stringify(trends));
-          localStorage.setItem("devmetrics_last_synced", now.toISOString());
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Error occurred");
-      } finally {
-        setLoading(false);
-        setIsRefreshing(false);
-      }
-    },
-    [username, accessToken, lastSynced]
-  );
-
-  //  Fetch when username or accessToken changes
   useEffect(() => {
-    if (username) fetchData();
-  }, [username, accessToken]);
+    console.log("useEffect: mounting");
+    fetchAll();
+  }, [fetchAll]);
 
   return {
-    userData,
+    user,
     repos,
+    languages,
     commitTrends,
+    totalCommits7Days,
+    pullRequests,
+    contributionCalendar,
     loading,
     error,
-    lastSynced,
-    isRefreshing,
-    refetch: () => fetchData(true),
   };
 }

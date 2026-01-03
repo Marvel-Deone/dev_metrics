@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -58,6 +58,7 @@ import { useSession } from "next-auth/react"
 import { useGitHubData } from "@/hooks/use-github-data"
 import { DashboardHeader } from "@/components/dashboard-header"
 import { useGithubMetrics } from "@/hooks/useGithubMetrics"
+import { toDashboardLanguages } from "@/lib/utils/normalize-language"
 // import { useAuth } from "@/lib/auth-context"
 // import { ProtectedRoute } from "@/components/protected-route"
 
@@ -72,13 +73,13 @@ const commitTrendsData = [
     { day: "Sun", commits: 3, additions: 90, deletions: 30 },
 ]
 
-const languageData = [
-    { name: "TypeScript", value: 45, color: "#3178c6" },
-    { name: "Python", value: 25, color: "#3572A5" },
-    { name: "JavaScript", value: 15, color: "#f1e05a" },
-    { name: "Go", value: 10, color: "#00ADD8" },
-    { name: "Rust", value: 5, color: "#dea584" },
-]
+// const languageData = [
+//     { name: "TypeScript", value: 45, color: "#3178c6" },
+//     { name: "Python", value: 25, color: "#3572A5" },
+//     { name: "JavaScript", value: 15, color: "#f1e05a" },
+//     { name: "Go", value: 10, color: "#00ADD8" },
+//     { name: "Rust", value: 5, color: "#dea584" },
+// ]
 
 const prActivityData = [
     { week: "W1", opened: 8, merged: 6, closed: 1 },
@@ -158,19 +159,22 @@ function DashboardContent() {
     //   const { user, signOut } = useAuth()
     const { data: session, status } = useSession();
 
-    const { userData: user, repos, commitTrends, loading, error } = useGitHubData(session?.user?.login);
+    const { user, repos, commitTrends, languages, loading, error } = useGitHubData();
     console.log('commutTrends:', commitTrends);
 
     const username = session?.user?.login || "";
+    const languageData = toDashboardLanguages(languages);
     const metrics = useGithubMetrics("Marvel-Deone");
 
-    const [mounted, setMounted] = useState(false)
-    const [isRefreshing, setIsRefreshing] = useState(false)
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+    const [mounted, setMounted] = useState(false);
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     useEffect(() => {
         setMounted(true)
-    }, [])
+    }, []);
+
+    const hasFetchedRef = useRef(false);
 
     const handleRefresh = async () => {
         setIsRefreshing(true)
@@ -231,7 +235,7 @@ function DashboardContent() {
                         <CardContent>
                             <div className="h-[280px]">
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <AreaChart data={commitTrendsData}>
+                                    <AreaChart data={commitTrends}>
                                         <defs>
                                             <linearGradient id="commitGradient" x1="0" y1="0" x2="0" y2="1">
                                                 <stop offset="5%" stopColor="oklch(0.65 0.2 155)" stopOpacity={0.3} />

@@ -1,11 +1,14 @@
 'use client'
 
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Github } from 'lucide-react';
 
 const SignIn = () => {
+  const { data: session } = useSession();
+  console.log('dataSession:', session);
+
   return (
     <div className="min-h-screen bg-linear-to-br from-background via-background to-background flex items-center justify-center p-4">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">

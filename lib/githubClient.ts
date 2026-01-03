@@ -10,10 +10,8 @@ export async function githubGraphQL<T>(query: string, variables?: Record<string,
 
     const json = await res.json();
     if (json.errors) {
-        console.log(json.errors);
         throw new Error("GitHub GraphQL Error");
     }
-
     console.log("GRAPHQL RESPONSE:", json);
 
     return json.data as T;

@@ -5,7 +5,6 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 export async function GET() {
     const session = await getServerSession(authOptions);
     const languageMap: Record<string, number> = {};
-    console.log("API /profile session:", session);
 
     if (!session?.githubToken || !session.githubUsername) {
         return NextResponse.json(
@@ -47,9 +46,13 @@ export async function GET() {
                 updatedAt
               }
             }
-            contributionsCollection {
+            contributionsCollection(from: $from, to: $to) {
               pullRequestContributions { totalCount }
+               pullRequestContributionsByRepository {
+                    contributions { totalCount }
+                }
               contributionCalendar {
+                totalContributions
                 weeks {
                   contributionDays {
                     date
@@ -75,7 +78,8 @@ export async function GET() {
 
     const json = await res.json();
     const user = json.data.user;
-
+    
+    // Language Heatmap
     user.repositories.nodes.forEach((repo: any) => {
         repo.languages.edges.forEach((edge: any) => {
             const lang = edge.node.name;
@@ -90,8 +94,18 @@ export async function GET() {
         percentage: Math.round((size / totalSize) * 100),
     }));
 
-    console.log('languagesjj:', languages);
-    
+    // PR Activity
+    const contributions =
+        user.contributionsCollection.contributionCalendar.weeks.flatMap(
+            (week: any) =>
+                week.contributionDays.map((day: any) => ({
+                    date: day.date,
+                    count: day.contributionCount,
+                    color: day.color,
+                }))
+        );
+
+
     return NextResponse.json({
         user: {
             login: user.login,
@@ -104,9 +118,10 @@ export async function GET() {
         languages,
         pullRequests:
             user.contributionsCollection.pullRequestContributions.totalCount,
-        contributions:
-            user.contributionsCollection.contributionCalendar.weeks.flatMap(
-                (w: any) => w.contributionDays
-            ),
+        contributions,
+        // contributions:
+        //     user.contributionsCollection.contributionCalendar.weeks.flatMap(
+        //         (w: any) => w.contributionDays
+        //     ),
     });
 }

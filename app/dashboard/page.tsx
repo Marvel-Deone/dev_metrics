@@ -59,8 +59,6 @@ import { useGitHubData } from "@/hooks/use-github-data"
 import { DashboardHeader } from "@/components/dashboard-header"
 import { useGithubMetrics } from "@/hooks/useGithubMetrics"
 import { toDashboardLanguages } from "@/lib/utils/normalize-language"
-// import { useAuth } from "@/lib/auth-context"
-// import { ProtectedRoute } from "@/components/protected-route"
 
 // Mock data
 const commitTrendsData = [
@@ -72,14 +70,6 @@ const commitTrendsData = [
     { day: "Sat", commits: 6, additions: 180, deletions: 60 },
     { day: "Sun", commits: 3, additions: 90, deletions: 30 },
 ]
-
-// const languageData = [
-//     { name: "TypeScript", value: 45, color: "#3178c6" },
-//     { name: "Python", value: 25, color: "#3572A5" },
-//     { name: "JavaScript", value: 15, color: "#f1e05a" },
-//     { name: "Go", value: 10, color: "#00ADD8" },
-//     { name: "Rust", value: 5, color: "#dea584" },
-// ]
 
 const prActivityData = [
     { week: "W1", opened: 8, merged: 6, closed: 1 },
@@ -159,8 +149,8 @@ function DashboardContent() {
     //   const { user, signOut } = useAuth()
     const { data: session, status } = useSession();
 
-    const { user, repos, commitTrends, languages, loading, error } = useGitHubData();
-    console.log('commutTrends:', commitTrends);
+    const { user, repos, commitTrends, languages, pullRequests, contributionCalendar, loading, error } = useGitHubData();
+    console.log('commutTrends:', commitTrends, 'contributionCalendar:', contributionCalendar);
 
     const username = session?.user?.login || "";
     const languageData = toDashboardLanguages(languages);
@@ -211,7 +201,7 @@ function DashboardContent() {
                 {/* Stats Overview */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                     <StatsCard label="Total Commits" value={metrics.commits} change="+12%" trend="up" icon={GitCommit} delay={0} />
-                    <StatsCard label="Pull Requests" value={metrics.prs} change="+8%" trend="up" icon={GitPullRequest} delay={1} />
+                    <StatsCard label="Pull Requests" value={pullRequests} change="+8%" trend="up" icon={GitPullRequest} delay={1} />
                     <StatsCard label="Code Reviews" value={metrics.reviews} change="+23%" trend="up" icon={Code2} delay={2} />
                     <StatsCard label="Current Streak" value={`${metrics?.bestStreak ?? 0} days`} change={`Best: ${metrics?.bestStreak}`} trend="neutral" icon={Flame} delay={3} />
                 </div>

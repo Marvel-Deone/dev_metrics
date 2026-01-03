@@ -37,8 +37,6 @@ export interface ContributionDay {
   color: string;
 }
 
-/* ===================== HOOK ===================== */
-
 export function useGitHubData() {
   console.log("useGitHubData: hook init");
 

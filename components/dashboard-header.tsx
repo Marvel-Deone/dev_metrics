@@ -18,14 +18,9 @@ export function DashboardHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   // const { userData: user, repos, loading, error } = useGitHubData(session?.user?.login);
   const { user, repos, loading, error } = useGitHubData();
-  console.log('sessionhfhf:', session?.user);
-  
   useEffect(() => {
     setMounted(true)
   }, []);
-
-  console.log('userDashboard:', user);
-
 
   const handleRefresh = async () => {
     setIsRefreshing(true)
@@ -34,68 +29,6 @@ export function DashboardHeader() {
   }
 
   return (
-    // <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl">
-    //   <div className="flex items-center justify-between px-6 h-16">
-    //     <div className="flex items-center gap-6 min-w-0">
-    //       <Link href="/" className="flex items-center gap-2">
-    //         <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-    //           <Activity className="h-4 w-4 text-primary-foreground" />
-    //         </div>
-    //         <span className="font-bold text-foreground">DevMetrics</span>
-    //       </Link>
-    //       <nav className="hidden md:flex items-center gap-1 min-w-0 shrink">
-    //         <Button variant="ghost" size="sm" className="text-foreground">
-    //           Overview
-    //         </Button>
-    //         <Button variant="ghost" size="sm" className="text-muted-foreground">
-    //           Repositories
-    //         </Button>
-    //         <Button variant="ghost" size="sm" className="text-muted-foreground">
-    //           Analytics
-    //         </Button>
-    //         <Button variant="ghost" size="sm" className="text-muted-foreground">
-    //           Goals
-    //         </Button>
-    //       </nav>
-    //     </div>
-
-    //     <div className="flex items-center gap-3 shrink-0">
-    //       <Button variant="ghost" size="icon" onClick={handleRefresh} className={isRefreshing ? "animate-spin" : ""}>
-    //         <RefreshCw className="h-4 w-4" />
-    //       </Button>
-    //       <Button variant="ghost" size="icon" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
-    //         {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-    //       </Button>
-    //       <Button variant="ghost" size="icon" className="relative">
-    //         <Bell className="h-4 w-4" />
-    //         <span className="absolute top-1.5 right-1.5 h-2 w-2 bg-primary rounded-full" />
-    //       </Button>
-    //       <DropdownMenu>
-    //         <DropdownMenuTrigger asChild>
-    //           <Button variant="ghost" className="gap-2 pl-2">
-    //             <Avatar className="h-7 w-7">
-    //               <AvatarImage src={user?.avatar_url || "/developer-avatar.png"} />
-    //               <AvatarFallback>{user?.name?.charAt(0) || "U"}</AvatarFallback>
-    //             </Avatar>
-    //             <span className="hidden sm:inline text-sm">{user?.name || "User"}</span>
-    //             <ChevronDown className="h-4 w-4 text-muted-foreground" />
-    //           </Button>
-    //         </DropdownMenuTrigger>
-    //         <DropdownMenuContent align="end" className="w-48">
-    //           <DropdownMenuItem>
-    //             <Settings className="h-4 w-4 mr-2" />
-    //             Settings
-    //           </DropdownMenuItem>
-    //           <DropdownMenuSeparator />
-    //           <DropdownMenuItem className="text-destructive" onClick={() => signOut({ callbackUrl: "/auth/signin" })}>
-    //             <LogOut className="h-4 w-4 mr-2" />
-    //             Sign out
-    //           </DropdownMenuItem>
-    //         </DropdownMenuContent>
-    //       </DropdownMenu>
-    //     </div>
-    //   </div>
-    // </header>
     <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl">
       <div className="flex items-center justify-between px-4 md:px-6 h-16 max-w-full overflow-hidden">
         {/* Left side - Logo and nav */}

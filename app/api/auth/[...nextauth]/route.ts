@@ -1,17 +1,67 @@
+// import NextAuth, { type NextAuthOptions } from "next-auth";
+// import GitHubProvider from "next-auth/providers/github";
+
+// declare module "next-auth" {
+//   interface Session {
+//     githubToken?: string;
+//     githubUsername?: string;
+//   }
+// }
+
+// declare module "next-auth/jwt" {
+//   interface JWT {
+//     githubToken?: string;
+//     githubUsername?: string;
+//   }
+// }
+
+// export const authOptions: NextAuthOptions = {
+//   providers: [
+//     GitHubProvider({
+//       clientId: process.env.GITHUB_CLIENT_ID!,
+//       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+//     }),
+//   ],
+
+//   callbacks: {
+//     async jwt({ token, account, profile }) {
+//       console.log('Hi there');
+      
+//       if (account && profile) {
+//         token.githubToken = account.access_token;
+//         console.log('Yes, hello');
+        
+//         token.githubUsername = (profile as any).login;
+//       }
+//       return token;
+//     },
+
+//     async session({ session, token }) {
+//       session.githubToken = token.githubToken;
+//       session.githubUsername = token.githubUsername;
+//       return session;
+//     },
+//   },
+// };
+
+// const handler = NextAuth(authOptions);
+
+// export { handler as GET, handler as POST };
+
 import NextAuth, { type NextAuthOptions } from "next-auth";
 import GitHubProvider from "next-auth/providers/github";
 
 declare module "next-auth" {
   interface Session {
     githubToken?: string;
-    githubUsername?: string;
+    login?: string;
   }
 }
 
 declare module "next-auth/jwt" {
   interface JWT {
     githubToken?: string;
-    githubUsername?: string;
+    login?: string;
   }
 }
 
@@ -25,16 +75,25 @@ export const authOptions: NextAuthOptions = {
 
   callbacks: {
     async jwt({ token, account, profile }) {
+      console.log('Hello there');
+      
       if (account && profile) {
+        console.log('ddhhdhhToken:', account.access_token);
+        
         token.githubToken = account.access_token;
-        token.githubUsername = (profile as any).login;
+        token.login = (profile as any).login;
       }
       return token;
     },
 
     async session({ session, token }) {
-      session.githubToken = token.githubToken;
-      session.githubUsername = token.githubUsername;
+      session.githubToken = token.githubToken as string;
+
+      // ✅ Ensure user object exists
+      if (session.user) {
+        (session.user as any).login = token.login as string;
+      }
+
       return session;
     },
   },

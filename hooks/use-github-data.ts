@@ -48,6 +48,10 @@ export function useGitHubData() {
   const [commitTrends, setCommitTrends] = useState<CommitTrend[]>([]);
   const [totalCommits7Days, setTotalCommits7Days] = useState(0);
   const [pullRequests, setPullRequests] = useState(0);
+  const [prActivity, setprActivity] = useState({
+    weekly: []
+  });
+  const [activeRepos, setActiveRepos] = useState<Repository[]>([]);
   const [contributionCalendar, setContributionCalendar] =
     useState<ContributionDay[]>([]);
   const [loading, setLoading] = useState(true);
@@ -58,7 +62,7 @@ export function useGitHubData() {
 
     const res = await fetch("/api/github/profile");
 
-    console.log("fetchProfile: response", res.status);
+    console.log("fetchProfilssse: response", res.status);
 
     if (!res.ok) {
       throw new Error("Not authenticated or profile fetch failed");
@@ -70,12 +74,14 @@ export function useGitHubData() {
     setUser(data.user);
     setRepos(data.repos);
     setLanguages(data.languages);
-    setPullRequests(data.pullRequests);
+    setPullRequests(data.pullRequest);
     setContributionCalendar(data.contributions);
+    setprActivity(data.prActivity);
+    setActiveRepos(data.activeRepos);
   };
 
   const fetchCommits = async () => {
-    console.log("fetchCommits: start");
+    console.log("fetchCommits: st art");
 
     const res = await fetch("/api/github/commits");
 
@@ -129,10 +135,12 @@ export function useGitHubData() {
   return {
     user,
     repos,
+    activeRepos,
     languages,
     commitTrends,
     totalCommits7Days,
     pullRequests,
+    prActivity,
     contributionCalendar,
     loading,
     error,

@@ -31,7 +31,7 @@ export function toDashboardLanguages(
   limit = 5
 ): DashboardLanguage[] {
   return raw
-    .filter(l => l.percentage > 0)
+    .filter(l => l.percentage > 0) // remove languages with 0% 
     .sort((a, b) => b.percentage - a.percentage)
     .slice(0, limit)
     .map(l => ({

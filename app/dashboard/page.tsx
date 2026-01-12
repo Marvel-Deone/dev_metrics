@@ -1,92 +1,24 @@
 "use client"
 
-import type React from "react"
-
-import { useState, useEffect, useRef } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {
-    Activity,
-    GitCommit,
-    GitBranch,
-    GitPullRequest,
-    Code2,
-    TrendingUp,
-    TrendingDown,
-    Calendar,
-    Clock,
-    Flame,
-    Star,
-    ExternalLink,
-    Settings,
-    LogOut,
-    Bell,
-    ChevronDown,
-    BarChart3,
-    RefreshCw,
-    Sun,
-    Moon,
-    Menu,
-    X,
-} from "lucide-react"
-import { useTheme } from "next-themes"
-import {
-    Area,
-    AreaChart,
-    Bar,
-    BarChart,
-    ResponsiveContainer,
-    XAxis,
-    YAxis,
-    Tooltip,
-    CartesianGrid,
-    Cell,
-    PieChart,
-    Pie,
-} from "recharts"
+import React, { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
-import { useGitHubData } from "@/hooks/use-github-data"
+import { useTheme } from "next-themes"
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, PieChart, Pie, Cell, BarChart, Bar } from "recharts"
+
 import { DashboardHeader } from "@/components/dashboard-header"
+import { useGitHubData } from "@/hooks/use-github-data"
 import { useGithubMetrics } from "@/hooks/useGithubMetrics"
 import { toDashboardLanguages } from "@/lib/utils/normalize-language"
-// import { useAuth } from "@/lib/auth-context"
-// import { ProtectedRoute } from "@/components/protected-route"
 
-// Mock data
-const commitTrendsData = [
-    { day: "Mon", commits: 12, additions: 450, deletions: 120 },
-    { day: "Tue", commits: 19, additions: 680, deletions: 230 },
-    { day: "Wed", commits: 8, additions: 220, deletions: 80 },
-    { day: "Thu", commits: 24, additions: 890, deletions: 340 },
-    { day: "Fri", commits: 15, additions: 520, deletions: 180 },
-    { day: "Sat", commits: 6, additions: 180, deletions: 60 },
-    { day: "Sun", commits: 3, additions: 90, deletions: 30 },
-]
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { GitCommit, GitPullRequest, Code2, Flame, BarChart3, Calendar, Clock, Star, ExternalLink, GitBranch, TrendingUp, TrendingDown } from "lucide-react"
+import { formatGitHubDate, getLastYearGrid, timeAgo } from "@/lib/utils/common.util"
+import Link from "next/link"
 
-// const languageData = [
-//     { name: "TypeScript", value: 45, color: "#3178c6" },
-//     { name: "Python", value: 25, color: "#3572A5" },
-//     { name: "JavaScript", value: 15, color: "#f1e05a" },
-//     { name: "Go", value: 10, color: "#00ADD8" },
-//     { name: "Rust", value: 5, color: "#dea584" },
-// ]
-
-const prActivityData = [
-    { week: "W1", opened: 8, merged: 6, closed: 1 },
-    { week: "W2", opened: 12, merged: 10, closed: 2 },
-    { week: "W3", opened: 6, merged: 8, closed: 0 },
-    { week: "W4", opened: 15, merged: 12, closed: 1 },
-]
+// Types
+type PRWeekActivity = { week: string; opened: number; merged: number; closed?: number }
+type PRActivity = { weekly: PRWeekActivity[] }
 
 const repoInsights = [
     { name: "devmetrics-app", stars: 1247, commits: 847, language: "TypeScript", trend: "+12%" },
@@ -95,35 +27,30 @@ const repoInsights = [
     { name: "design-system", stars: 456, commits: 298, language: "TypeScript", trend: "+5%" },
 ]
 
-const recentActivity = [
-    { type: "commit", repo: "devmetrics-app", message: "feat: add dashboard analytics", time: "2 hours ago" },
-    { type: "pr", repo: "api-gateway", message: "Merge: implement rate limiting", time: "4 hours ago" },
-    { type: "commit", repo: "ml-pipeline", message: "fix: resolve memory leak", time: "6 hours ago" },
-    { type: "pr", repo: "design-system", message: "Open: update button variants", time: "8 hours ago" },
-]
+// const recentActivity = [
+//     { type: "commit", repo: "devmetrics-app", message: "feat: add dashboard analytics", time: "2 hours ago" },
+//     { type: "pr", repo: "api-gateway", message: "Merge: implement rate limiting", time: "4 hours ago" },
+//     { type: "commit", repo: "ml-pipeline", message: "fix: resolve memory leak", time: "6 hours ago" },
+//     { type: "pr", repo: "design-system", message: "Open: update button variants", time: "8 hours ago" },
+// ]
 
-const heatmapData = Array.from({ length: 52 }, (_, weekIndex) =>
-    Array.from({ length: 7 }, (_, dayIndex) => ({
-        week: weekIndex,
-        day: dayIndex,
-        value: Math.floor(Math.random() * 10),
-    })),
-).flat()
+// const heatmapData = Array.from({ length: 52 }, (_, weekIndex) =>
+//     Array.from({ length: 7 }, (_, dayIndex) => ({
+//         week: weekIndex,
+//         day: dayIndex,
+//         value: Math.floor(Math.random() * 10),
+//     }))
+// ).flat();
 
-// Custom tooltip component for proper theming
-const CustomTooltip = ({
-    active,
-    payload,
-    label,
-}: { active?: boolean; payload?: Array<{ name: string; value: number; color?: string }>; label?: string }) => {
+// Custom Tooltips
+const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
         return (
             <div className="bg-popover border border-border rounded-lg p-3 shadow-lg">
                 {label && <p className="text-sm font-medium text-foreground mb-1">{label}</p>}
-                {payload.map((entry, index) => (
+                {payload.map((entry: any, index: number) => (
                     <p key={index} className="text-sm text-muted-foreground">
-                        <span className="capitalize">{entry.name}</span>:{" "}
-                        <span className="font-medium text-foreground">{entry.value}</span>
+                        <span className="capitalize">{entry.name}</span>: <span className="font-medium text-foreground">{entry.value}</span>
                     </p>
                 ))}
             </div>
@@ -132,11 +59,7 @@ const CustomTooltip = ({
     return null
 }
 
-// Custom pie tooltip for language chart
-const CustomPieTooltip = ({
-    active,
-    payload,
-}: { active?: boolean; payload?: Array<{ name: string; value: number; payload: { color: string } }> }) => {
+const CustomPieTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
         const data = payload[0]
         return (
@@ -154,71 +77,81 @@ const CustomPieTooltip = ({
     return null
 }
 
+// Stats Card Component
+function StatsCard({ label, value, change, trend, icon: Icon, delay }: any) {
+    return (
+        <Card className="animate-slide-up border-border/50" style={{ animationDelay: `${delay * 100}ms` }}>
+            <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-2">
+                    <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <Icon className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className={`flex items-center gap-1 text-xs font-medium ${trend === "up" ? "text-green-500" : trend === "down" ? "text-red-500" : "text-muted-foreground"
+                        }`}>
+                        {trend === "up" && <TrendingUp className="h-3 w-3" />}
+                        {trend === "down" && <TrendingDown className="h-3 w-3" />}
+                        {change}
+                    </div>
+                </div>
+                <p className="text-2xl font-bold text-foreground">{value}</p>
+                <p className="text-xs text-muted-foreground">{label}</p>
+            </CardContent>
+        </Card>
+    )
+}
+
+// Main Dashboard
 function DashboardContent() {
     const { theme, setTheme } = useTheme()
-    //   const { user, signOut } = useAuth()
-    const { data: session, status } = useSession();
+    const { data: session } = useSession()
+    const { user, repos = [], activeRepos = [], commitTrends, languages, pullRequests, contributionCalendar = [], loading, error, prActivity, recentActivity } = useGitHubData() || {}
+    const username = session?.user?.login || ""
+    const metrics = useGithubMetrics(username || "Marvel-Deone")
+    const languageData = toDashboardLanguages(languages ?? [])
 
-    const { user, repos, commitTrends, languages, loading, error } = useGitHubData();
-    console.log('commutTrends:', commitTrends);
+    const [mounted, setMounted] = useState(false)
+    useEffect(() => setMounted(true), [])
 
-    const username = session?.user?.login || "";
-    const languageData = toDashboardLanguages(languages);
-    const metrics = useGithubMetrics("Marvel-Deone");
+    console.log('recentActivity:', recentActivity);
 
-    const [mounted, setMounted] = useState(false);
-    const [isRefreshing, setIsRefreshing] = useState(false);
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-    useEffect(() => {
-        setMounted(true)
-    }, []);
-
-    const hasFetchedRef = useRef(false);
-
-    const handleRefresh = async () => {
-        setIsRefreshing(true)
-        await new Promise((resolve) => setTimeout(resolve, 1500))
-        setIsRefreshing(false)
-    }
-
-    const getHeatmapColor = (value: number) => {
-        if (value === 0) return "bg-muted"
-        if (value <= 2) return "bg-primary/20"
-        if (value <= 4) return "bg-primary/40"
-        if (value <= 6) return "bg-primary/60"
-        if (value <= 8) return "bg-primary/80"
-        return "bg-primary"
-    }
+    const contributionMap = React.useMemo(() => {
+        return new Map(
+            contributionCalendar.map((d: any) => [d.date, d.contributionCount])
+        )
+    }, [contributionCalendar])
 
     if (!mounted) return null
 
+    const getHeatmapColor = (count: number) => {
+        if (count === 0) return "bg-muted"
+        if (count < 3) return "bg-primary/20"
+        if (count < 6) return "bg-primary/40"
+        if (count < 10) return "bg-primary/60"
+        return "bg-primary"
+    }
+
+    const weeks = getLastYearGrid()
     return (
         <div className="min-h-screen bg-background">
-            {/* Header */}
             <DashboardHeader />
-
-            {/* Main Content */}
             <main className="p-4 md:p-6 max-w-7xl mx-auto">
-                {/* Welcome Section */}
                 <div className="mb-8 animate-fade-in">
-                    <h1 className="text-2xl font-bold text-foreground mb-1">
-                        Welcome back, {user?.name?.split(" ")[0] || "User"}
-                    </h1>
-                    <p className="text-muted-foreground">Here&apos;s your engineering productivity overview</p>
+                    <h1 className="text-2xl font-bold text-foreground mb-1">Welcome back, {user?.name?.split(" ")[0] || "User"}</h1>
+                    <p className="text-muted-foreground">Here's your engineering productivity overview</p>
                 </div>
 
                 {/* Stats Overview */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                    <StatsCard label="Total Commits" value={metrics.commits} change="+12%" trend="up" icon={GitCommit} delay={0} />
-                    <StatsCard label="Pull Requests" value={metrics.prs} change="+8%" trend="up" icon={GitPullRequest} delay={1} />
-                    <StatsCard label="Code Reviews" value={metrics.reviews} change="+23%" trend="up" icon={Code2} delay={2} />
-                    <StatsCard label="Current Streak" value={`${metrics?.bestStreak ?? 0} days`} change={`Best: ${metrics?.bestStreak}`} trend="neutral" icon={Flame} delay={3} />
+                    <StatsCard label="Total Commits" value={metrics?.commits ?? 0} change="+12%" trend="up" icon={GitCommit} delay={0} />
+                    <StatsCard label="Pull Requests" value={pullRequests ?? 0} change="+8%" trend="up" icon={GitPullRequest} delay={1} />
+                    <StatsCard label="Code Reviews" value={metrics?.reviews ?? 0} change="+23%" trend="up" icon={Code2} delay={2} />
+                    <StatsCard label="Current Streak" value={`${metrics?.bestStreak ?? 0} days`} change={`Best: ${metrics?.bestStreak ?? 0}`} trend="neutral" icon={Flame} delay={3} />
                 </div>
 
-                {/* Main Grid */}
+                {/* Charts, Repo Insights, Heatmap, Recent Activity */}
                 <div className="grid lg:grid-cols-3 gap-6 mb-6">
-                    {/* Commit Trends - Large Card */}
+                    {/* Commit Trends */}
                     <Card className="lg:col-span-2 animate-slide-up stagger-1 border-border/50">
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
                             <div>
@@ -229,7 +162,7 @@ function DashboardContent() {
                                 <CardDescription>Your commit activity this week</CardDescription>
                             </div>
                             <Badge variant="secondary" className="font-mono">
-                                87 commits
+                                {commitTrends?.reduce((sum, c) => sum + (c.commits ?? 0), 0) ?? 0} commits
                             </Badge>
                         </CardHeader>
                         <CardContent>
@@ -243,21 +176,10 @@ function DashboardContent() {
                                             </linearGradient>
                                         </defs>
                                         <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.3 0.01 285)" opacity={0.3} />
-                                        <XAxis
-                                            dataKey="day"
-                                            axisLine={false}
-                                            tickLine={false}
-                                            tick={{ fill: "oklch(0.6 0 0)", fontSize: 12 }}
-                                        />
+                                        <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: "oklch(0.6 0 0)", fontSize: 12 }} />
                                         <YAxis axisLine={false} tickLine={false} tick={{ fill: "oklch(0.6 0 0)", fontSize: 12 }} />
                                         <Tooltip content={<CustomTooltip />} />
-                                        <Area
-                                            type="monotone"
-                                            dataKey="commits"
-                                            stroke="oklch(0.65 0.2 155)"
-                                            strokeWidth={2}
-                                            fill="url(#commitGradient)"
-                                        />
+                                        <Area type="monotone" dataKey="commits" stroke="oklch(0.65 0.2 155)" strokeWidth={2} fill="url(#commitGradient)" />
                                     </AreaChart>
                                 </ResponsiveContainer>
                             </div>
@@ -322,14 +244,9 @@ function DashboardContent() {
                         <CardContent>
                             <div className="h-[200px]">
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={prActivityData}>
+                                    <BarChart data={prActivity.weekly}>
                                         <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.3 0.01 285)" opacity={0.3} />
-                                        <XAxis
-                                            dataKey="week"
-                                            axisLine={false}
-                                            tickLine={false}
-                                            tick={{ fill: "oklch(0.6 0 0)", fontSize: 12 }}
-                                        />
+                                        <XAxis dataKey="week" axisLine={false} tickLine={false} tick={{ fill: "oklch(0.6 0 0)", fontSize: 12 }} />
                                         <YAxis axisLine={false} tickLine={false} tick={{ fill: "oklch(0.6 0 0)", fontSize: 12 }} />
                                         <Tooltip content={<CustomTooltip />} />
                                         <Bar dataKey="opened" fill="oklch(0.6 0.15 200)" radius={[4, 4, 0, 0]} />
@@ -361,7 +278,12 @@ function DashboardContent() {
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-3">
-                                {repoInsights.map((repo, index) => (
+                                {activeRepos.map((repo, index) => (
+                                    // <Link
+                                    //     href={`/dashboard/repos/${repo.name}`}
+                                    //     className="block"
+                                    //     key={repo.name}
+                                    // >
                                     <div
                                         key={repo.name}
                                         className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors group cursor-pointer"
@@ -391,17 +313,17 @@ function DashboardContent() {
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-3">
-                                            <span className="text-sm text-primary font-medium">{repo.trend}</span>
+                                            {/* <span className="text-sm text-primary font-medium">{repo.trend}</span> */}
                                             <ExternalLink className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                                         </div>
                                     </div>
+                                    // </Link>
                                 ))}
                             </div>
                         </CardContent>
                     </Card>
                 </div>
 
-                {/* Contribution Heatmap & Recent Activity */}
                 <div className="grid lg:grid-cols-3 gap-6">
                     {/* Contribution Heatmap */}
                     <Card className="lg:col-span-2 animate-slide-up stagger-5 border-border/50">
@@ -414,22 +336,44 @@ function DashboardContent() {
                         </CardHeader>
                         <CardContent>
                             <div className="overflow-x-auto pb-2">
-                                <div className="flex gap-1 min-w-[800px]">
+                                {/* <div className="flex gap-1 min-w-[800px]">
                                     {Array.from({ length: 52 }, (_, weekIndex) => (
                                         <div key={weekIndex} className="flex flex-col gap-1">
                                             {Array.from({ length: 7 }, (_, dayIndex) => {
-                                                const dataPoint = heatmapData.find((d) => d.week === weekIndex && d.day === dayIndex)
+                                                const dataPoint = heatmapData.find((d) => d.week === weekIndex && d.day === dayIndex);
                                                 return (
                                                     <div
                                                         key={dayIndex}
                                                         className={`h-3 w-3 rounded-sm ${getHeatmapColor(dataPoint?.value || 0)} transition-all hover:scale-125`}
                                                         title={`${dataPoint?.value || 0} contributions`}
                                                     />
-                                                )
+                                                );
                                             })}
                                         </div>
                                     ))}
+                                </div> */}
+                                <div className="overflow-x-auto pb-2">
+                                    <div className="flex gap-1 min-w-[800px]">
+                                        {weeks.map((week, wi) => (
+                                            <div key={wi} className="flex flex-col gap-1">
+                                                {week.map((day, di) => {
+                                                    const dateKey = day.toISOString().split("T")[0]
+                                                    const count = contributionMap.get(dateKey) ?? 0
+
+                                                    return (
+                                                        <div
+                                                            key={di}
+                                                            // title={`${count} contributions on ${dateKey}`}
+                                                            title={formatGitHubDate(dateKey, count)}
+                                                            className={`h-3 w-3 rounded-sm ${getHeatmapColor(count)} transition-transform hover:scale-125`}
+                                                        />
+                                                    )
+                                                })}
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
+
                             </div>
                             <div className="flex items-center justify-end gap-2 mt-4 text-xs text-muted-foreground">
                                 <span>Less</span>
@@ -459,7 +403,9 @@ function DashboardContent() {
                                 {recentActivity.map((activity, index) => (
                                     <div key={index} className="flex gap-3">
                                         <div
-                                            className={`h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0 ${activity.type === "commit" ? "bg-primary/10" : "bg-chart-2/10"
+                                            className={`h-8 w-8 rounded-full flex items-center justify-center ${activity.type === "commit"
+                                                ? "bg-primary/10"
+                                                : "bg-chart-2/10"
                                                 }`}
                                         >
                                             {activity.type === "commit" ? (
@@ -468,10 +414,13 @@ function DashboardContent() {
                                                 <GitPullRequest className="h-4 w-4 text-chart-2" />
                                             )}
                                         </div>
+
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-sm text-foreground truncate">{activity.message}</p>
+                                            <p className="text-sm text-foreground truncate">
+                                                {activity.message}
+                                            </p>
                                             <p className="text-xs text-muted-foreground">
-                                                {activity.repo} · {activity.time}
+                                                {activity.repo} · {timeAgo(activity.date)}
                                             </p>
                                         </div>
                                     </div>
@@ -480,51 +429,12 @@ function DashboardContent() {
                         </CardContent>
                     </Card>
                 </div>
+
             </main>
         </div>
     )
 }
 
-function StatsCard({
-    label,
-    value,
-    change,
-    trend,
-    icon: Icon,
-    delay,
-}: {
-    label: string
-    value: string | number
-    change: string
-    trend: "up" | "down" | "neutral"
-    icon: React.ElementType
-    delay: number
-}) {
-    return (
-        <Card className="animate-slide-up border-border/50" style={{ animationDelay: `${delay * 100}ms` }}>
-            <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-2">
-                    <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <Icon className="h-4 w-4 text-primary" />
-                    </div>
-                    <div
-                        className={`flex items-center gap-1 text-xs font-medium ${trend === "up" ? "text-green-500" : trend === "down" ? "text-red-500" : "text-muted-foreground"
-                            }`}
-                    >
-                        {trend === "up" && <TrendingUp className="h-3 w-3" />}
-                        {trend === "down" && <TrendingDown className="h-3 w-3" />}
-                        {change}
-                    </div>
-                </div>
-                <p className="text-2xl font-bold text-foreground">{value}</p>
-                <p className="text-xs text-muted-foreground">{label}</p>
-            </CardContent>
-        </Card>
-    )
-}
-
 export default function DashboardPage() {
-    return (
-        <DashboardContent />
-    )
+    return <DashboardContent />
 }

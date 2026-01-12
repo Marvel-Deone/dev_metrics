@@ -86,8 +86,8 @@ export async function exportAsPDF(data: ExportData) {
 
   const totalStars = data.repos.reduce((sum, repo) => sum + repo.stargazers_count, 0)
   const totalForks = data.repos.reduce((sum, repo) => sum + repo.forks_count, 0)
-  const languages = [...new Set(data.repos.map((r) => r.language).filter(Boolean))]
-
+  // const languages = [...new Set(data.repos.map((r) => r.language).filter(Boolean))]
+const languages = [];
   doc.setFontSize(11)
   doc.setFont("helvetica", "normal")
   doc.text(`Total Repositories: ${data.repos.length}`, 20, y)

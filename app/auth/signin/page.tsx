@@ -6,9 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Github } from 'lucide-react';
 
 const SignIn = () => {
-  const { data: session } = useSession();
-  console.log('dataSession:', session);
-
   return (
     <div className="min-h-screen bg-linear-to-br from-background via-background to-background flex items-center justify-center p-4">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">

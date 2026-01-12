@@ -4,14 +4,14 @@ import GitHubProvider from "next-auth/providers/github";
 declare module "next-auth" {
   interface Session {
     githubToken?: string;
-    githubUsername?: string;
+    login?: string;
   }
 }
 
 declare module "next-auth/jwt" {
   interface JWT {
     githubToken?: string;
-    githubUsername?: string;
+    login?: string;
   }
 }
 
@@ -27,14 +27,18 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, account, profile }) {
       if (account && profile) {
         token.githubToken = account.access_token;
-        token.githubUsername = (profile as any).login;
+        token.login = (profile as any).login;
       }
       return token;
     },
 
     async session({ session, token }) {
-      session.githubToken = token.githubToken;
-      session.githubUsername = token.githubUsername;
+      session.githubToken = token.githubToken as string;
+
+      if (session.user) {
+        (session.user as any).login = token.login as string;
+      }
+
       return session;
     },
   },

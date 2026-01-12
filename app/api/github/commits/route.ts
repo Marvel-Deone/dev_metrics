@@ -5,9 +5,10 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 export async function GET() {
   const session = await getServerSession(authOptions);
 
-  console.log("API /commits session:", session);
+  const login = (session?.user as any)?.login;
+  const token = session?.githubToken;
 
-  if (!session?.githubUsername) {
+  if (!login || !token) {
     return NextResponse.json(
       { error: "Unauthorized" },
       { status: 401 }
@@ -15,10 +16,11 @@ export async function GET() {
   }
 
   const res = await fetch(
-    `https://api.github.com/users/${session.githubUsername}/events/public?per_page=100`,
+    `https://api.github.com/users/${login}/events/public?per_page=100`,
     {
       headers: {
-        Authorization: `Bearer ${session.githubToken}`,
+        Authorization: `Bearer ${token}`,
+        Accept: "application/vnd.github+json",
       },
     }
   );
@@ -32,6 +34,7 @@ export async function GET() {
 
   const events = await res.json();
 
+  // Last 7 days (Sun–Sat)
   const days = [...Array(7)].map((_, i) => {
     const d = new Date();
     d.setDate(d.getDate() - (6 - i));
@@ -45,7 +48,10 @@ export async function GET() {
     if (e.type === "PushEvent") {
       const day = new Date(e.created_at)
         .toLocaleDateString("en-US", { weekday: "short" });
-      map[day] += e.payload?.commits?.length || 1;
+
+      if (day in map) {
+        map[day] += e.payload?.commits?.length || 1;
+      }
     }
   });
 

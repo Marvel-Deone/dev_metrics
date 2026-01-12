@@ -48,6 +48,15 @@ export interface ContributionDay {
   color: string;
 }
 
+export type RecentActivityType = "commit" | "pr"
+
+export interface RecentActivityItem {
+  type: RecentActivityType
+  repo: string
+  message: string
+  date: string // ISO string from GitHub
+}
+
 export function useGitHubData() {
   const fetchedRef = useRef(false);
 
@@ -57,6 +66,7 @@ export function useGitHubData() {
   const [commitTrends, setCommitTrends] = useState<CommitTrend[]>([]);
   const [totalCommits7Days, setTotalCommits7Days] = useState(0);
   const [pullRequests, setPullRequests] = useState(0);
+  const [recentActivity, setRecentActivity] = useState<RecentActivityItem[]>([]);
   const [prActivity, setprActivity] = useState({
     weekly: []
   });
@@ -74,6 +84,7 @@ export function useGitHubData() {
     }
 
     const data = await res.json();
+    console.log('use-github-datajj: ', data)
     setUser(data.user);
     setRepos(data.repos);
     setLanguages(data.languages);
@@ -81,6 +92,7 @@ export function useGitHubData() {
     setContributionCalendar(data.contributions);
     setprActivity(data.prActivity);
     setActiveRepos(data.activeRepos);
+    setRecentActivity(data.recentActivity);
   };
 
   const fetchCommits = async () => {
@@ -131,6 +143,7 @@ export function useGitHubData() {
     pullRequests,
     prActivity,
     contributionCalendar,
+    recentActivity,
     loading,
     error,
   };

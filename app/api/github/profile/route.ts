@@ -88,7 +88,11 @@ export async function GET() {
                       defaultBranchRef {
                         target {
                             ... on Commit {
-                            history(first: 0) {
+                            history(first: 5) {
+                            nodes {
+                                committedDate
+                                messageHeadline
+                            }
                                 totalCount
                             }
                             }
@@ -152,6 +156,8 @@ export async function GET() {
     const json = await res.json();
     const user = json.data.user;
 
+    const recentActivity: any[] = []
+
     // Aggregate languages
     const languageTotals: Record<string, { size: number; color?: string }> = {};
     user.repositories.nodes.forEach((repo: any) => {
@@ -201,6 +207,39 @@ export async function GET() {
             trend: calculateTrend(repo.pullRequests.nodes),
         }));
 
+    // Recent Activity
+
+    // PRs
+    user.pullRequests.nodes.forEach((pr: any) => {
+        recentActivity.push({
+            type: "pr",
+            repo: pr.repository.name,
+            message: pr.title,
+            date: pr.createdAt,
+        })
+    })
+
+    // Commits
+    user.repositories.nodes.forEach((repo: any) => {
+        const commits = repo.defaultBranchRef?.target?.history?.nodes ?? []
+
+        commits.forEach((commit: any) => {
+            recentActivity.push({
+                type: "commit",
+                repo: repo.name,
+                message: commit.messageHeadline,
+                date: commit.committedDate,
+            })
+        })
+    })
+
+    // Sort + limit
+    recentActivity.sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    )
+
+    const recentActivityLimited = recentActivity.slice(0, 5)
+
     const response = {
         user: {
             login: user.login,
@@ -219,7 +258,7 @@ export async function GET() {
             ...prStats,
             weekly: prWeeklyActivity,
         },
-
+        recentActivity: recentActivityLimited,
         contributions,
     };
 

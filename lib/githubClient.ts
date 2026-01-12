@@ -12,7 +12,6 @@ export async function githubGraphQL<T>(query: string, variables?: Record<string,
     if (json.errors) {
         throw new Error("GitHub GraphQL Error");
     }
-    console.log("GRAPHQL RESPONSE:", json);
-
+s
     return json.data as T;
 }

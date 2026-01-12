@@ -77,7 +77,7 @@ export function useGitHubData() {
     setUser(data.user);
     setRepos(data.repos);
     setLanguages(data.languages);
-    setPullRequests(data.pullRequest);
+    setPullRequests(data.pullRequests);
     setContributionCalendar(data.contributions);
     setprActivity(data.prActivity);
     setActiveRepos(data.activeRepos);

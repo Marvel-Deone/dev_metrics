@@ -107,6 +107,7 @@ function DashboardContent() {
     const metrics = useGithubMetrics(username || "Marvel-Deone")
     const languageData = toDashboardLanguages(languages ?? [])
 
+    
     const [mounted, setMounted] = useState(false)
     useEffect(() => setMounted(true), [])
     if (!mounted) return null

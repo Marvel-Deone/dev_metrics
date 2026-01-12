@@ -55,6 +55,18 @@ export async function GET() {
         return NextResponse.json(cached.data);
     }
 
+    const scopeCheck = await fetch("https://api.github.com/user", {
+        headers: {
+            Authorization: `Bearer ${githubToken}`,
+        },
+    })
+
+    console.log(
+        "Token scopes:",
+        scopeCheck.headers.get("x-oauth-scopes")
+    )
+
+
     const res = await fetch("https://api.github.com/graphql", {
         method: "POST",
         headers: {
@@ -73,7 +85,7 @@ export async function GET() {
 
                 repositories(
                     first: 20, 
-                    ownerAffiliations: OWNER
+                    ownerAffiliations: OWNER,
                     orderBy: { field: PUSHED_AT, direction: DESC }
                 ) {
                   nodes {
@@ -154,6 +166,16 @@ export async function GET() {
     }
 
     const json = await res.json();
+
+    if (json.errors) {
+        console.error("GitHub GraphQL errors:", json.errors);
+        return NextResponse.json(
+            { error: "GitHub GraphQL error", details: json.errors },
+            { status: 500 }
+        );
+    }
+
+
     const user = json.data.user;
 
     const recentActivity: any[] = []

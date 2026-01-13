@@ -137,7 +137,7 @@ function DashboardContent() {
             <DashboardHeader />
             <main className="p-4 md:p-6 max-w-7xl mx-auto">
                 <div className="mb-8 animate-fade-in">
-                    <h1 className="text-2xl font-bold text-foreground mb-1">Welcome back, {user?.name?.split(" ")[0] || "User"}</h1>
+                    <h1 className="text-2xl font-bold text-foreground mb-1">Welcome back, John</h1>
                     <p className="text-muted-foreground">Here's your engineering productivity overview</p>
                 </div>
 

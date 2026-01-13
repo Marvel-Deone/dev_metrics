@@ -30,7 +30,7 @@ export function DashboardHeader() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl">
-      <div className="flex items-center justify-between px-4 md:px-6 h-16 max-w-8xl mx-auto overflow-hidden">
+      <div className="flex items-center justify-between px-4 md:px-6 h-16 max-w-[90rem] mx-auto overflow-hidden">
         {/* Left side - Logo and nav */}
         <div className="flex items-center gap-4 md:gap-6 min-w-0">
           <Link href="/" className="flex items-center gap-2 shrink-0">
@@ -93,10 +93,10 @@ export function DashboardHeader() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="gap-2 pl-2 hidden sm:flex cursor-pointer!">
                 <Avatar className="h-7 w-7">
-                  <AvatarImage src={user?.avatarUrl || "/developer-avatar.png"} />
-                  <AvatarFallback>{user?.login?.charAt(0) || "U"}</AvatarFallback>
+                  <AvatarImage src={"/developer-avatar.png"} />
+                  <AvatarFallback>U</AvatarFallback>
                 </Avatar>
-                <span className="hidden md:inline text-sm max-w-[120px] truncate">{user?.login || "User"}</span>
+                <span className="hidden md:inline text-sm max-w-[120px] truncate">{"John"}</span>
                 <ChevronDown className="h-4 w-4 text-muted-foreground" />
               </Button>
             </DropdownMenuTrigger>

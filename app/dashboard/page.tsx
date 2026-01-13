@@ -278,7 +278,7 @@ function DashboardContent() {
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-3">
-                                {activeRepos.map((repo, index) => (
+                                {repoInsights.map((repo, index) => (
                                     // <Link
                                     //     href={`/dashboard/repos/${repo.name}`}
                                     //     className="block"

@@ -93,10 +93,10 @@ export function DashboardHeader() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="gap-2 pl-2 hidden sm:flex cursor-pointer!">
                 <Avatar className="h-7 w-7">
-                  <AvatarImage src={"/developer-avatar.png"} />
-                  <AvatarFallback>U</AvatarFallback>
+                  <AvatarImage src={user?.avatarUrl || "/developer-avatar.png"} />
+                  <AvatarFallback>{user?.login?.charAt(0) || "U"}</AvatarFallback>
                 </Avatar>
-                <span className="hidden md:inline text-sm max-w-[120px] truncate">{"John"}</span>
+                <span className="hidden md:inline text-sm max-w-[120px] truncate">{user?.login || "User"}</span>
                 <ChevronDown className="h-4 w-4 text-muted-foreground" />
               </Button>
             </DropdownMenuTrigger>

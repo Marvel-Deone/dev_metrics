@@ -61,12 +61,6 @@ export async function GET() {
         },
     })
 
-    console.log(
-        "Token scopes:",
-        scopeCheck.headers.get("x-oauth-scopes")
-    )
-
-
     const res = await fetch("https://api.github.com/graphql", {
         method: "POST",
         headers: {

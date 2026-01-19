@@ -137,7 +137,7 @@ function DashboardContent() {
             <DashboardHeader />
             <main className="p-4 md:p-6 max-w-7xl mx-auto">
                 <div className="mb-8 animate-fade-in">
-                    <h1 className="text-2xl font-bold text-foreground mb-1">Welcome back, John</h1>
+                    <h1 className="text-2xl font-bold text-foreground mb-1">Welcome back, {user?.name?.split(" ")[0] }</h1>
                     <p className="text-muted-foreground">Here's your engineering productivity overview</p>
                 </div>
 
@@ -278,17 +278,17 @@ function DashboardContent() {
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-3">
-                                {repoInsights.map((repo, index) => (
-                                    // <Link
-                                    //     href={`/dashboard/repos/${repo.name}`}
-                                    //     className="block"
-                                    //     key={repo.name}
-                                    // >
-                                    <div
+                                {activeRepos.map((repo, index) => (
+                                    <Link
+                                        href={`/dashboard/repo/${username}/${repo.name}`}
+                                        className="block"
+                                        key={repo.name}
+                                    >
+                                    {/* <div
                                         key={repo.name}
                                         className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors group cursor-pointer"
                                         style={{ animationDelay: `${index * 100}ms` }}
-                                    >
+                                    > */}
                                         <div className="flex items-center gap-3">
                                             <div className="h-10 w-10 rounded-lg bg-background flex items-center justify-center border border-border">
                                                 <GitBranch className="h-5 w-5 text-primary" />
@@ -316,8 +316,8 @@ function DashboardContent() {
                                             {/* <span className="text-sm text-primary font-medium">{repo.trend}</span> */}
                                             <ExternalLink className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                                         </div>
-                                    </div>
-                                    // </Link>
+                                    {/* </div> */}
+                                    </Link>
                                 ))}
                             </div>
                         </CardContent>

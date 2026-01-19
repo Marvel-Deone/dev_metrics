@@ -84,7 +84,6 @@ export function useGitHubData() {
     }
 
     const data = await res.json();
-    console.log('use-github-datajj: ', data)
     setUser(data.user);
     setRepos(data.repos);
     setLanguages(data.languages);

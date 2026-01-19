@@ -331,9 +331,7 @@
   }
 }
 
-/* ========================================
-   ANIMATION UTILITY CLASSES
-   ======================================== */
+/* ANIMATION UTILITY CLASSES */
 
 .animate-float {
   animation: float 6s ease-in-out infinite;
@@ -415,9 +413,7 @@
   animation: orbit 20s linear infinite;
 }
 
-/* ========================================
-   STAGGER ANIMATION DELAYS
-   ======================================== */
+/* STAGGER ANIMATION DELAYS */
 
 .stagger-1 {
   animation-delay: 0.1s;
@@ -444,9 +440,7 @@
   animation-delay: 0.8s;
 }
 
-/* ========================================
-   SCROLL-TRIGGERED ANIMATION STATES
-   ======================================== */
+/* SCROLL-TRIGGERED ANIMATION STATES */
 
 .animate-on-scroll {
   opacity: 0;
@@ -492,9 +486,7 @@
   transform: scale(1);
 }
 
-/* ========================================
-   HOVER EFFECTS
-   ======================================== */
+/* HOVER EFFECTS */
 
 .hover-lift {
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
@@ -521,9 +513,7 @@
   transform: scale(1.05);
 }
 
-/* ========================================
-   GRADIENT TEXT ANIMATION
-   ======================================== */
+/* GRADIENT TEXT ANIMATION */
 
 .gradient-text-animated {
   background: linear-gradient(90deg, var(--primary), oklch(0.7 0.2 155), var(--primary));
@@ -534,10 +524,7 @@
   animation: gradient-shift 3s linear infinite;
 }
 
-/* ========================================
-   GLASSMORPHISM EFFECTS
-   ======================================== */
-
+/* GLASSMORPHISM EFFECTS */
 .glass {
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
@@ -547,4 +534,27 @@
 .dark .glass {
   background: rgba(0, 0, 0, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Custom Scrollbar (Heatmap) */
+
+/* Firefox */
+.heatmap-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: gray/transparent;
+}
+
+/* WebKit (Chrome, Edge, Safari) */
+.heatmap-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+
+.heatmap-scroll::-webkit-scrollbar-track {
+  background: oklch(0.3 0.01 285 / 0.4);
+  border-radius: 999px;
+}
+
+.heatmap-scroll::-webkit-scrollbar-thumb {
+  /* background: oklch(0.65 0.2 155); */
+  border-radius: 999px;
 }

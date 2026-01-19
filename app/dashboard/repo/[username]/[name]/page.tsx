@@ -55,7 +55,7 @@ function PageShell({ children }: { children: React.ReactNode }) {
     return (
         <div className="min-h-screen bg-background">
             <DashboardHeader />
-            <main className="container mx-auto px-4 py-8 space-y-8">{children}</main>
+            <main className="space-y-8 p-3 sm:p-4 md:p-6 max-w-7xl mx-auto">{children}</main>
         </div>
     );
 }

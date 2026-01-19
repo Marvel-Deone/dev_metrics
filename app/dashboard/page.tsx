@@ -34,14 +34,6 @@ const repoInsights = [
 //     { type: "pr", repo: "design-system", message: "Open: update button variants", time: "8 hours ago" },
 // ]
 
-// const heatmapData = Array.from({ length: 52 }, (_, weekIndex) =>
-//     Array.from({ length: 7 }, (_, dayIndex) => ({
-//         week: weekIndex,
-//         day: dayIndex,
-//         value: Math.floor(Math.random() * 10),
-//     }))
-// ).flat();
-
 // Custom Tooltips
 const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -112,9 +104,6 @@ function DashboardContent() {
     const [mounted, setMounted] = useState(false)
     useEffect(() => setMounted(true), [])
 
-    console.log('recentActivity:', recentActivity);
-
-
     const contributionMap = React.useMemo(() => {
         return new Map(
             contributionCalendar.map((d: any) => [d.date, d.contributionCount])
@@ -135,14 +124,14 @@ function DashboardContent() {
     return (
         <div className="min-h-screen bg-background">
             <DashboardHeader />
-            <main className="p-4 md:p-6 max-w-7xl mx-auto">
+            <main className="p-3 sm:p-4 md:p-6 max-w-7xl mx-auto">
                 <div className="mb-8 animate-fade-in">
-                    <h1 className="text-2xl font-bold text-foreground mb-1">Welcome back, {user?.name?.split(" ")[0] }</h1>
+                    <h1 className="text-2xl font-bold text-foreground mb-1">Welcome back, {user?.name?.split(" ")[0]}</h1>
                     <p className="text-muted-foreground">Here's your engineering productivity overview</p>
                 </div>
 
                 {/* Stats Overview */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                     <StatsCard label="Total Commits" value={metrics?.commits ?? 0} change="+12%" trend="up" icon={GitCommit} delay={0} />
                     <StatsCard label="Pull Requests" value={pullRequests ?? 0} change="+8%" trend="up" icon={GitPullRequest} delay={1} />
                     <StatsCard label="Code Reviews" value={metrics?.reviews ?? 0} change="+23%" trend="up" icon={Code2} delay={2} />
@@ -150,9 +139,9 @@ function DashboardContent() {
                 </div>
 
                 {/* Charts, Repo Insights, Heatmap, Recent Activity */}
-                <div className="grid lg:grid-cols-3 gap-6 mb-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
                     {/* Commit Trends */}
-                    <Card className="lg:col-span-2 animate-slide-up stagger-1 border-border/50">
+                    <Card className="lg:col-span-2 min-w-0 animate-slide-up stagger-1 border-border/50">
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
                             <div>
                                 <CardTitle className="text-lg font-semibold flex items-center gap-2">
@@ -166,7 +155,7 @@ function DashboardContent() {
                             </Badge>
                         </CardHeader>
                         <CardContent>
-                            <div className="h-[280px]">
+                            <div className="h-[280px] sm:h-[260px] lg:h-[280px]">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <AreaChart data={commitTrends}>
                                         <defs>
@@ -196,7 +185,7 @@ function DashboardContent() {
                             <CardDescription>Code distribution by language</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="h-[180px] mb-4">
+                            <div className="h-[160px] sm:h-[180px] mb-4">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <PieChart>
                                         <Pie
@@ -219,7 +208,7 @@ function DashboardContent() {
                             <div className="space-y-2">
                                 {languageData.map((lang) => (
                                     <div key={lang.name} className="flex items-center justify-between text-sm">
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex flex-wrap items-center gap-2">
                                             <div className="h-3 w-3 rounded-full" style={{ backgroundColor: lang.color }} />
                                             <span className="text-foreground">{lang.name}</span>
                                         </div>
@@ -231,7 +220,7 @@ function DashboardContent() {
                     </Card>
                 </div>
 
-                <div className="grid lg:grid-cols-3 gap-6 mb-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
                     {/* PR Activity */}
                     <Card className="animate-slide-up stagger-3 border-border/50">
                         <CardHeader className="pb-2">
@@ -246,7 +235,7 @@ function DashboardContent() {
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={prActivity.weekly}>
                                         <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.3 0.01 285)" opacity={0.3} />
-                                        <XAxis dataKey="week" axisLine={false} tickLine={false} tick={{ fill: "oklch(0.6 0 0)", fontSize: 12 }} />
+                                        <XAxis dataKey="week" axisLine={false} tickLine={false} tick={{ fill: "oklch(0.6 0 0)", fontSize: 10 }} />
                                         <YAxis axisLine={false} tickLine={false} tick={{ fill: "oklch(0.6 0 0)", fontSize: 12 }} />
                                         <Tooltip content={<CustomTooltip />} />
                                         <Bar dataKey="opened" fill="oklch(0.6 0.15 200)" radius={[4, 4, 0, 0]} />
@@ -281,20 +270,16 @@ function DashboardContent() {
                                 {activeRepos.map((repo, index) => (
                                     <Link
                                         href={`/dashboard/repo/${username}/${repo.name}`}
-                                        className="block"
-                                        key={repo.name}
-                                    >
-                                    {/* <div
                                         key={repo.name}
                                         className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors group cursor-pointer"
                                         style={{ animationDelay: `${index * 100}ms` }}
-                                    > */}
+                                    >
                                         <div className="flex items-center gap-3">
                                             <div className="h-10 w-10 rounded-lg bg-background flex items-center justify-center border border-border">
                                                 <GitBranch className="h-5 w-5 text-primary" />
                                             </div>
                                             <div>
-                                                <p className="font-medium text-foreground group-hover:text-primary transition-colors">
+                                                <p className="font-medium text-foreground truncate max-w-[220px] sm:max-w-none group-hover:text-primary transition-colors">
                                                     {repo.name}
                                                 </p>
                                                 <div className="flex items-center gap-3 text-xs text-muted-foreground">
@@ -316,7 +301,7 @@ function DashboardContent() {
                                             {/* <span className="text-sm text-primary font-medium">{repo.trend}</span> */}
                                             <ExternalLink className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                                         </div>
-                                    {/* </div> */}
+                                        {/* </div> */}
                                     </Link>
                                 ))}
                             </div>
@@ -324,9 +309,9 @@ function DashboardContent() {
                     </Card>
                 </div>
 
-                <div className="grid lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Contribution Heatmap */}
-                    <Card className="lg:col-span-2 animate-slide-up stagger-5 border-border/50">
+                    <Card className="lg:col-span-2 min-w-0 animate-slide-up stagger-5 border-border/50">
                         <CardHeader className="pb-2">
                             <CardTitle className="text-lg font-semibold flex items-center gap-2">
                                 <Calendar className="h-5 w-5 text-primary" />
@@ -335,25 +320,10 @@ function DashboardContent() {
                             <CardDescription>Your activity over the past year</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="overflow-x-auto pb-2">
-                                {/* <div className="flex gap-1 min-w-[800px]">
-                                    {Array.from({ length: 52 }, (_, weekIndex) => (
-                                        <div key={weekIndex} className="flex flex-col gap-1">
-                                            {Array.from({ length: 7 }, (_, dayIndex) => {
-                                                const dataPoint = heatmapData.find((d) => d.week === weekIndex && d.day === dayIndex);
-                                                return (
-                                                    <div
-                                                        key={dayIndex}
-                                                        className={`h-3 w-3 rounded-sm ${getHeatmapColor(dataPoint?.value || 0)} transition-all hover:scale-125`}
-                                                        title={`${dataPoint?.value || 0} contributions`}
-                                                    />
-                                                );
-                                            })}
-                                        </div>
-                                    ))}
-                                </div> */}
-                                <div className="overflow-x-auto pb-2">
-                                    <div className="flex gap-1 min-w-[800px]">
+                            <div className="heatmap-scroll overflow-x-auto pb-2">
+                                {/* -mx-4 px-4 sm:mx-0 sm:px-0 */}
+                                <div className="w-max">
+                                    <div className="flex gap-1">
                                         {weeks.map((week, wi) => (
                                             <div key={wi} className="flex flex-col gap-1">
                                                 {week.map((day, di) => {
@@ -363,7 +333,6 @@ function DashboardContent() {
                                                     return (
                                                         <div
                                                             key={di}
-                                                            // title={`${count} contributions on ${dateKey}`}
                                                             title={formatGitHubDate(dateKey, count)}
                                                             className={`h-3 w-3 rounded-sm ${getHeatmapColor(count)} transition-transform hover:scale-125`}
                                                         />
@@ -373,8 +342,8 @@ function DashboardContent() {
                                         ))}
                                     </div>
                                 </div>
-
                             </div>
+
                             <div className="flex items-center justify-end gap-2 mt-4 text-xs text-muted-foreground">
                                 <span>Less</span>
                                 <div className="flex gap-1">
@@ -387,6 +356,7 @@ function DashboardContent() {
                                 <span>More</span>
                             </div>
                         </CardContent>
+
                     </Card>
 
                     {/* Recent Activity */}
@@ -416,7 +386,7 @@ function DashboardContent() {
                                         </div>
 
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-sm text-foreground truncate">
+                                            <p className="text-sm text-foreground truncate sm:whitespace-normal">
                                                 {activity.message}
                                             </p>
                                             <p className="text-xs text-muted-foreground">

@@ -27,13 +27,6 @@ const repoInsights = [
     { name: "design-system", stars: 456, commits: 298, language: "TypeScript", trend: "+5%" },
 ]
 
-// const recentActivity = [
-//     { type: "commit", repo: "devmetrics-app", message: "feat: add dashboard analytics", time: "2 hours ago" },
-//     { type: "pr", repo: "api-gateway", message: "Merge: implement rate limiting", time: "4 hours ago" },
-//     { type: "commit", repo: "ml-pipeline", message: "fix: resolve memory leak", time: "6 hours ago" },
-//     { type: "pr", repo: "design-system", message: "Open: update button variants", time: "8 hours ago" },
-// ]
-
 // Custom Tooltips
 const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {

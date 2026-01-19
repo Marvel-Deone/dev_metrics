@@ -181,6 +181,7 @@ export default function RepoDetailPage() {
     }
 
     const { repoDetails, loading, error } = useRepoDetails(owner, repoName, token);
+
     const {
         timeline,
         loading: timelineLoading,
@@ -191,15 +192,27 @@ export default function RepoDetailPage() {
 
     if (loading) return <LoadingState />;
 
-    if (!repoDetails || error) {
+    if (error) {
         return (
             <ErrorState
                 title="Failed to load repository"
-                message={error || "Repository not found or you don’t have access."}
+                message={error}
                 onBack={() => router.back()}
             />
         );
     }
+
+    if (!repoDetails) {
+        return (
+            <LoadingState />
+            // <ErrorState
+            //     title="Repository not found"
+            //     message="This repository may not exist or you don’t have access."
+            //     onBack={() => router.back()}
+            // />
+        );
+    }
+
 
     const visibilityLabel = repoDetails.private ? "Private" : "Public";
     const description = repoDetails.description?.trim() || "No description provided.";

@@ -38,6 +38,26 @@ function calculateTrend(repoPRs: any[]) {
     return `${trend >= 0 ? "+" : ""}${trend.toFixed(0)}%`;
 }
 
+function groupActivityByHour(commits: any[], prs: any[]) {
+    const hours = Array.from({ length: 24 }, (_, h) => ({
+        hour: h,
+        count: 0,
+    }))
+
+    commits.forEach((c) => {
+        const hour = new Date(c.committedDate).getHours()
+        hours[hour].count++
+    })
+
+    prs.forEach((pr) => {
+        const hour = new Date(pr.createdAt).getHours()
+        hours[hour].count++
+    })
+
+    return hours
+}
+
+
 export async function GET() {
     const session = await getServerSession(authOptions);
 
@@ -223,6 +243,28 @@ export async function GET() {
             trend: calculateTrend(repo.pullRequests.nodes),
         }));
 
+    const allCommits: any[] = []
+
+    user.repositories.nodes.forEach((repo: any) => {
+        const commits = repo.defaultBranchRef?.target?.history?.nodes ?? []
+        commits.forEach((c: any) => {
+            allCommits.push(c)
+        })
+    })
+
+    const allPRs = user.pullRequests.nodes
+    // Compute active hours
+    const activeHours = groupActivityByHour(allCommits, allPRs)
+
+    const peakHour = activeHours.reduce(
+        (max, h) => (h.count > max.count ? h : max),
+        activeHours[0]
+    )
+
+    const mostActiveHour = {
+        hour: peakHour.hour,
+        count: peakHour.count,
+    }
     // Recent Activity
 
     // PRs
@@ -274,6 +316,9 @@ export async function GET() {
             ...prStats,
             weekly: prWeeklyActivity,
         },
+
+        activeHours,
+        mostActiveHour,
         recentActivity: recentActivityLimited,
         contributions,
     };

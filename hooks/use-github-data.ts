@@ -24,6 +24,11 @@ export interface ActiveRepository {
   updatedAt: string;
 }
 
+export interface ActiveHour {
+  hour: number;
+  count: number;
+}
+
 export interface GitHubUser {
   login: string;
   name: string;
@@ -71,6 +76,8 @@ export function useGitHubData() {
     weekly: []
   });
   const [activeRepos, setActiveRepos] = useState<ActiveRepository[]>([]);
+  const [activeHours, setActiveHours] = useState<ActiveHour[]>([]);
+  const [mostActiveHour, setMostActiveHour] = useState<ActiveHour>();
   const [contributionCalendar, setContributionCalendar] =
     useState<ContributionDay[]>([]);
   const [loading, setLoading] = useState(true);
@@ -92,6 +99,8 @@ export function useGitHubData() {
     setprActivity(data.prActivity);
     setActiveRepos(data.activeRepos);
     setRecentActivity(data.recentActivity);
+    setActiveHours(data.activeHours);
+    setMostActiveHour(data.mostActiveHour);
   };
 
   const fetchCommits = async () => {
@@ -143,6 +152,8 @@ export function useGitHubData() {
     prActivity,
     contributionCalendar,
     recentActivity,
+    activeHours,
+    mostActiveHour,
     loading,
     error,
   };

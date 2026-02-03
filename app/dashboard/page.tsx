@@ -63,7 +63,14 @@ const CustomPieTooltip = ({ active, payload }: any) => {
 }
 
 // Stats Card Component
-function StatsCard({ label, value, change, trend, icon: Icon, delay }: any) {
+function StatsCard({ label, value, change, trend, icon: Icon, delay }: {
+    label: string
+    value: React.ReactNode
+    change?: string
+    trend?: "up" | "down" | "neutral"
+    icon: any
+    delay: number
+}) {
     return (
         <Card className="animate-slide-up border-border/50" style={{ animationDelay: `${delay * 100}ms` }}>
             <CardContent className="p-4">
@@ -78,18 +85,61 @@ function StatsCard({ label, value, change, trend, icon: Icon, delay }: any) {
                         {change}
                     </div>
                 </div>
-                <p className="text-2xl font-bold text-foreground">{value}</p>
+                {/* <p className="text-2xl font-bold text-foreground">{value}</p> */}
+                <div className="text-foreground">
+                    {typeof value === "string" || typeof value === "number" ? (
+                        <p className="text-2xl font-bold">{value}</p>
+                    ) : (
+                        value
+                    )}
+                </div>
                 <p className="text-xs text-muted-foreground">{label}</p>
             </CardContent>
         </Card>
     )
 }
 
+function getMostActiveHour(activeHours: { hour: number; count: number }[]) {
+    if (!activeHours.length) return null
+
+    return activeHours.reduce((max, curr) =>
+        curr.count > max.count ? curr : max
+    )
+}
+
+function InsightCard({ icon: Icon, title, value, description }: any) {
+    return (
+        <Card className="border-border/50">
+            <CardContent className="p-3">
+                <div className="flex items-center gap-3 mb-2">
+                    <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <Icon className="h-4 w-4 text-primary" />
+                    </div>
+                    <p className="text-sm font-medium text-muted-foreground">
+                        {title}
+                    </p>
+                </div>
+
+                <p className="text-xl font-bold text-foreground">
+                    {value}
+                </p>
+
+                {description && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                        {description}
+                    </p>
+                )}
+            </CardContent>
+        </Card>
+    )
+}
+
+
 // Main Dashboard
 function DashboardContent() {
     const { theme, setTheme } = useTheme()
     const { data: session } = useSession()
-    const { user, repos = [], activeRepos = [], commitTrends, languages, pullRequests, contributionCalendar = [], loading, error, prActivity, recentActivity } = useGitHubData() || {}
+    const { user, repos = [], activeRepos = [], commitTrends, languages, pullRequests, contributionCalendar = [], loading, error, prActivity, recentActivity, mostActiveHour, } = useGitHubData() || {}
     const username = session?.user?.login || ""
     const metrics = useGithubMetrics(username || "Marvel-Deone")
     const languageData = toDashboardLanguages(languages ?? [])
@@ -114,6 +164,27 @@ function DashboardContent() {
     }
 
     const weeks = getLastYearGrid()
+    // const peakHour = getMostActiveHour(activeHours)
+
+    function formatHour(hour: number) {
+        const period = hour >= 12 ? "PM" : "AM"
+        const h = hour % 12 || 12
+        return `${h} ${period}`
+    }
+
+    function formatHourRange(hour: number) {
+        const start = `${hour.toString().padStart(2, "0")}:00`
+        const end = `${((hour + 1) % 24).toString().padStart(2, "0")}:00`
+        return `${start} – ${end}`
+    }
+
+    function getChronotype(hour: number) {
+        if (hour < 6) return "Midnight hacker 🌙"
+        if (hour < 12) return "Early bird 🌅"
+        if (hour < 18) return "Day builder ☀️"
+        return "Night owl 🦉"
+    }
+
     return (
         <div className="min-h-screen bg-background">
             <DashboardHeader />
@@ -129,6 +200,26 @@ function DashboardContent() {
                     <StatsCard label="Pull Requests" value={pullRequests ?? 0} change="+8%" trend="up" icon={GitPullRequest} delay={1} />
                     <StatsCard label="Code Reviews" value={metrics?.reviews ?? 0} change="+23%" trend="up" icon={Code2} delay={2} />
                     <StatsCard label="Current Streak" value={`${metrics?.bestStreak ?? 0} days`} change={`Best: ${metrics?.bestStreak ?? 0}`} trend="neutral" icon={Flame} delay={3} />
+                    {/* <StatsCard label="Most Active Time" value={mostActiveHour ? formatHourRange(mostActiveHour.hour) : "-"} change={mostActiveHour ? getChronotype(mostActiveHour.hour) : "-"} trend="neutral" icon={Clock} delay={4} /> */}
+                    {/* <StatsCard
+                        label="Most Active Time"
+                        value={
+                            mostActiveHour ? (
+                                <div className="leading-tight">
+                                    <p className="text-2xl font-bold">
+                                        {formatHourRange(mostActiveHour.hour)}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        {getChronotype(mostActiveHour.hour)}
+                                    </p>
+                                </div>
+                            ) : (
+                                "—"
+                            )
+                        }
+                        icon={Clock}
+                        delay={4}
+                    /> */}
                 </div>
 
                 {/* Charts, Repo Insights, Heatmap, Recent Activity */}
@@ -302,7 +393,7 @@ function DashboardContent() {
                     </Card>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-4">
                     {/* Contribution Heatmap */}
                     <Card className="lg:col-span-2 min-w-0 animate-slide-up stagger-5 border-border/50">
                         <CardHeader className="pb-2">
@@ -392,6 +483,38 @@ function DashboardContent() {
                         </CardContent>
                     </Card>
                 </div>
+
+                <h3 className="text-lg font-semibold mb-4">Developer Insights</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <InsightCard
+                        icon={Clock}
+                        title="Most Active Hours"
+                        value="21:00 – 23:00"
+                        description="Night owl 🦉"
+                    />
+
+                    <InsightCard
+                        icon={Calendar}
+                        title="Peak Day"
+                        value="Wednesday"
+                        description="Highest contribution volume"
+                    />
+
+                    <InsightCard
+                        icon={Code2}
+                        title="Top Language"
+                        value="TypeScript"
+                        description="Most used in the last year"
+                    />
+                </div>
+
+
+                {/* <div className="flex justify-between text-xs text-muted-foreground mt-2">
+                    <span>12 AM</span>
+                    <span>12 PM</span>
+                    <span>11 PM</span>
+                </div> */}
+
 
             </main>
         </div>

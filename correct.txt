@@ -855,3 +855,730 @@ export default function DashboardPage() {
         <DashboardContent />
     )
 }
+
+
+     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <StatCard
+          icon={<Star className="w-8 h-8 text-yellow-500 mb-2" />}
+          value={repoDetails.stargazers_count}
+          label="Stars"
+        />
+        <StatCard
+          icon={<GitFork className="w-8 h-8 text-blue-500 mb-2" />}
+          value={repoDetails.forks_count}
+          label="Forks"
+        />
+        <StatCard
+          icon={<AlertCircle className="w-8 h-8 text-red-500 mb-2" />}
+          value={repoDetails.open_issues_count}
+          label="Open Issues"
+        />
+        <StatCard
+          icon={<HardDrive className="w-8 h-8 text-muted-foreground mb-2" />}
+          value={formatBytesFromKb(repoDetails.size)}
+          label="Size"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Activity Timeline */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle>Activity Timeline</CardTitle>
+            <CardDescription>
+              Commits and Pull Requests over the last 6 months (mock data)
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent>
+            <ChartContainer
+              config={{
+                commits: { label: "Commits", color: "hsl(var(--primary))" },
+                prs: { label: "PRs", color: "hsl(var(--secondary))" },
+              }}
+              className="h-[300px]"
+            >
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={timelineData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="month" tickLine={false} axisLine={false} />
+                  <YAxis tickLine={false} axisLine={false} />
+                  <Tooltip content={<ChartTooltipContent />} />
+                  <Bar
+                    dataKey="commits"
+                    fill="var(--color-commits)"
+                    radius={[4, 4, 0, 0]}
+                  />
+                  <Bar
+                    dataKey="prs"
+                    fill="var(--color-prs)"
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+
+        {/* Right column */}
+        <div className="space-y-6">
+          {/* Details */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Details</CardTitle>
+            </CardHeader>
+
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground flex items-center gap-2">
+                  <Users className="w-4 h-4" /> Contributors
+                </span>
+                <span className="font-medium">—</span>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground flex items-center gap-2">
+                  <Calendar className="w-4 h-4" /> Created
+                </span>
+                <span className="font-medium">{formatDate(repoDetails.created_at)}</span>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground flex items-center gap-2">
+                  <GitCommit className="w-4 h-4" /> Last push
+                </span>
+                <span className="font-medium">{formatDate(repoDetails.pushed_at)}</span>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground flex items-center gap-2">
+                  <GitPullRequest className="w-4 h-4" /> Default branch
+                </span>
+                <span className="font-medium">{repoDetails.default_branch || "—"}</span>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground flex items-center gap-2">
+                  <Calendar className="w-4 h-4" /> Updated
+                </span>
+                <span className="font-medium">{formatDate(repoDetails.updated_at)}</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Languages */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Languages</CardTitle>
+              <CardDescription>Primary language (from repo metadata)</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {repoDetails.language ? (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-primary" />
+                    <span>{repoDetails.language}</span>
+                  </div>
+                  <span className="font-medium">Primary</span>
+                </div>
+              ) : (
+                <span className="text-muted-foreground">No language detected</span>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Features */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Features</CardTitle>
+              <CardDescription>Repository capabilities</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {[
+                { label: "Issues", ok: repoDetails.has_issues },
+                { label: "Projects", ok: repoDetails.has_projects },
+                { label: "Wiki", ok: repoDetails.has_wiki },
+                { label: "Pages", ok: repoDetails.has_pages },
+                { label: "Discussions", ok: repoDetails.has_discussions },
+              ].map((f) => (
+                <div key={f.label} className="flex items-center justify-between">
+                  <span className="text-muted-foreground">{f.label}</span>
+                  {f.ok ? (
+                    <span className="inline-flex items-center gap-1 font-medium">
+                      <CheckCircle2 className="h-4 w-4" /> Enabled
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 text-muted-foreground">
+                      <XCircle className="h-4 w-4" /> Off
+                    </span>
+                  )}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          {/* Access / Permissions */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-4 w-4" /> Access
+              </CardTitle>
+              <CardDescription>Your permission level for this repo</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-wrap gap-2">
+              {permBadges
+                .filter((p) => Boolean(perms?.[p.key]))
+                .map((p) => (
+                  <Badge key={p.key} variant="secondary">
+                    {p.label}
+                  </Badge>
+                ))}
+
+              {!permBadges.some((p) => Boolean(perms?.[p.key])) ? (
+                <span className="text-muted-foreground text-sm">No permission info</span>
+              ) : null}
+            </CardContent>
+          </Card>
+
+          {/* Links / Clone */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Links</CardTitle>
+              <CardDescription>Quick access & cloning</CardDescription>
+            </CardHeader>
+
+            <CardContent className="space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-muted-foreground flex items-center gap-2">
+                  <ExternalLink className="h-4 w-4" /> GitHub
+                </span>
+                <Button asChild variant="outline" size="sm">
+                  <a href={repoDetails.html_url} target="_blank" rel="noopener noreferrer">
+                    Open
+                  </a>
+                </Button>
+              </div>
+
+              {hasHomepage ? (
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-muted-foreground flex items-center gap-2">
+                    <LinkIcon className="h-4 w-4" /> Website
+                  </span>
+                  <Button asChild variant="outline" size="sm">
+                    <a href={repoDetails.homepage} target="_blank" rel="noopener noreferrer">
+                      Open
+                    </a>
+                  </Button>
+                </div>
+              ) : null}
+
+              <div className="space-y-2 pt-2">
+                <div className="text-sm font-medium flex items-center gap-2">
+                  <GitCommit className="h-4 w-4" /> Clone
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 truncate rounded-md border px-3 py-2 text-sm text-muted-foreground">
+                    {repoDetails.clone_url || "—"}
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => repoDetails.clone_url && copyToClipboard(repoDetails.clone_url)}
+                    aria-label="Copy HTTPS clone URL"
+                    disabled={!repoDetails.clone_url}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 truncate rounded-md border px-3 py-2 text-sm text-muted-foreground">
+                    {repoDetails.ssh_url || "—"}
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => repoDetails.ssh_url && copyToClipboard(repoDetails.ssh_url)}
+                    aria-label="Copy SSH clone URL"
+                    disabled={!repoDetails.ssh_url}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+
+
+      timelineData
+
+      // "use client";
+
+// import { useSession } from "next-auth/react";
+// import { useParams, useRouter } from "next/navigation";
+// import { DashboardHeader } from "@/components/dashboard-header";
+// import { Button } from "@/components/ui/button";
+// import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+// import { Skeleton } from "@/components/ui/skeleton";
+// import {
+//     ArrowLeft,
+//     Star,
+//     GitFork,
+//     Eye,
+//     ExternalLink,
+//     Calendar,
+//     GitCommit,
+//     GitPullRequest,
+//     AlertCircle,
+//     Users,
+// } from "lucide-react";
+// import { useGitHubData } from "@/hooks/use-github-data";
+// import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
+// import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
+// import { useRepoDetails } from "@/hooks/use-repo-details";
+
+// const RepoDetailPage = () => {
+//     // // Mock timeline data
+//     const timelineData = [
+//         { month: "Jan", commits: 12, prs: 2 },
+//         { month: "Feb", commits: 18, prs: 4 },
+//         { month: "Mar", commits: 24, prs: 3 },
+//         { month: "Apr", commits: 15, prs: 5 },
+//         { month: "May", commits: 32, prs: 8 },
+//         { month: "Jun", commits: 28, prs: 6 },
+//     ];
+
+//     const params = useParams();
+//     const router = useRouter();
+//     const { data: session, status } = useSession();
+
+//     const loggedInUser = params.username as string;
+//     const repoName = params.name as string;
+
+//     const loginName = session?.user?.login ?? "";
+//     const token = (session as any)?.githubToken ?? "";
+
+//     console.log("session status:", status);
+//     console.log("loginName:", loginName);
+//     console.log("repoName:", repoName);
+//     console.log("token exists:", Boolean(token), token?.slice?.(0, 6));
+
+
+//     const { repoDetails, loading, error } = useRepoDetails(loggedInUser, repoName, token);
+
+//     console.log('repoDetails:', repoDetails);
+
+//     if (status === "loading" || loading) {
+//         return (
+//             <div className="min-h-screen bg-background">
+//                 <DashboardHeader />
+//                 <div className="container mx-auto px-4 py-8 space-y-6">
+//                     <Skeleton className="h-8 w-32" />
+//                     <Skeleton className="h-64 w-full" />
+//                     <div className="grid grid-cols-3 gap-4">
+//                         <Skeleton className="h-32" />
+//                         <Skeleton className="h-32" />
+//                         <Skeleton className="h-32" />
+//                     </div>
+//                 </div>
+//             </div>
+//         );
+//     }
+
+//     // ✅ if not logged in, show a “sign in” style state (or redirect)
+//     if (status === "unauthenticated") {
+//         return (
+//             <div className="min-h-screen bg-background">
+//                 <DashboardHeader />
+//                 <div className="container mx-auto px-4 py-8 text-center">
+//                     <h1 className="text-2xl font-bold">Please sign in</h1>
+//                     <Button onClick={() => router.back()} className="mt-4">Go Back</Button>
+//                 </div>
+//             </div>
+//         );
+//     }
+
+//     if (!repoDetails || error) {
+//         return (
+//             <div className="min-h-screen bg-background">
+//                 <DashboardHeader />
+//                 <div className="container mx-auto px-4 py-8 text-center">
+//                     <h1 className="text-2xl font-bold">Failed to load repository</h1>
+//                     <p className="mt-2 text-muted-foreground">{error}</p>
+//                     <Button onClick={() => router.back()} className="mt-4">Go Back</Button>
+//                 </div>
+//             </div>
+//         );
+//     }
+
+//     return (
+//         <div className="min-h-screen bg-background">
+//             <DashboardHeader />
+//             <main className="container mx-auto px-4 py-8 space-y-8">
+
+//                 {/* Back Button */}
+//                 <div className="flex flex-col gap-4">
+//                     <Button
+//                         variant="ghost"
+//                         className="w-fit pl-0 hover:pl-2 transition-all"
+//                         onClick={() => router.back()}
+//                     >
+//                         <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
+//                     </Button>
+
+//                     {/* Repo Title + View on GitHub */}
+//                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+//                         <div>
+//                             <h1 className="text-4xl font-bold tracking-tight">{repoDetails.name}</h1>
+//                             <p className="text-muted-foreground text-lg mt-2 max-w-2xl">
+//                                 {repoDetails.description}
+//                             </p>
+//                         </div>
+
+//                         <Button asChild className="gap-2">
+//                             <a
+//                                 href={repoDetails.html_url}
+//                                 target="_blank"
+//                                 rel="noopener noreferrer"
+//                             >
+//                                 View on GitHub <ExternalLink className="w-4 h-4" />
+//                             </a>
+//                         </Button>
+//                     </div>
+//                 </div>
+
+//                 {/* Key Metrics Grid */}
+//                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+//                     <Card className="bg-card/50">
+//                         <CardContent className="flex flex-col items-center justify-center p-6 text-center">
+//                             <Star className="w-8 h-8 text-yellow-500 mb-2" />
+//                             <span className="text-2xl font-bold">{repoDetails.stargazers_count}</span>
+//                             <span className="text-sm text-muted-foreground">Stars</span>
+//                         </CardContent>
+//                     </Card>
+
+//                     <Card className="bg-card/50">
+//                         <CardContent className="flex flex-col items-center justify-center p-6 text-center">
+//                             <GitFork className="w-8 h-8 text-blue-500 mb-2" />
+//                             <span className="text-2xl font-bold">{repoDetails.forks_count}</span>
+//                             <span className="text-sm text-muted-foreground">Forks</span>
+//                         </CardContent>
+//                     </Card>
+
+//                     <Card className="bg-card/50">
+//                         <CardContent className="flex flex-col items-center justify-center p-6 text-center">
+//                             <AlertCircle className="w-8 h-8 text-red-500 mb-2" />
+//                             <span className="text-2xl font-bold">{repoDetails.open_issues_count}</span>
+//                             <span className="text-sm text-muted-foreground">Open Issues</span>
+//                         </CardContent>
+//                     </Card>
+
+//                     <Card className="bg-card/50">
+//                         <CardContent className="flex flex-col items-center justify-center p-6 text-center">
+//                             <Eye className="w-8 h-8 text-green-500 mb-2" />
+//                             <span className="text-2xl font-bold">{repoDetails.watchers_count}</span>
+//                             <span className="text-sm text-muted-foreground">Watchers</span>
+//                         </CardContent>
+//                     </Card>
+//                 </div>
+
+//                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+//                     {/* Activity Timeline */}
+//                     <Card className="lg:col-span-2">
+//                         <CardHeader>
+//                             <CardTitle>Activity Timeline</CardTitle>
+//                             <CardDescription>
+//                                 Commits and Pull Requests over the last 6 months
+//                             </CardDescription>
+//                         </CardHeader>
+
+//                                 <CardContent>
+//                                     <ChartContainer
+//                                         config={{
+//                                             commits: { label: "Commits", color: "hsl(var(--primary))" },
+//                                             prs: { label: "PRs", color: "hsl(var(--secondary))" },
+//                                         }}
+//                                         className="h-[300px]"
+//                                     >
+//                                         <ResponsiveContainer width="100%" height="100%">
+//                                             <BarChart data={timelineData}>
+//                                                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
+//                                                 <XAxis dataKey="month" tickLine={false} axisLine={false} />
+//                                                 <YAxis tickLine={false} axisLine={false} />
+//                                                 <Tooltip content={<ChartTooltipContent />} />
+//                                                 <Bar dataKey="commits" fill="var(--color-commits)" radius={[4, 4, 0, 0]} />
+//                                                 <Bar dataKey="prs" fill="var(--color-prs)" radius={[4, 4, 0, 0]} />
+//                                             </BarChart>
+//                                         </ResponsiveContainer>
+//                                     </ChartContainer>
+//                                 </CardContent>
+//                     </Card>
+
+//                     {/* Repo Details Card */}
+//                     <div className="space-y-6">
+//                         <Card>
+//                             <CardHeader>
+//                                 <CardTitle>Details</CardTitle>
+//                             </CardHeader>
+//                             <CardContent className="space-y-4">
+//                                 <div className="flex items-center justify-between">
+//                                     <span className="text-muted-foreground flex items-center gap-2">
+//                                         <Users className="w-4 h-4" /> Contributors
+//                                     </span>
+//                                     <span className="font-medium">12</span>
+//                                 </div>
+
+//                                 <div className="flex items-center justify-between">
+//                                     <span className="text-muted-foreground flex items-center gap-2">
+//                                         <Calendar className="w-4 h-4" /> Created
+//                                     </span>
+//                                     <span className="font-medium">
+//                                         {new Date(repoDetails?.created_at).toLocaleDateString()}
+//                                     </span>
+//                                 </div>
+
+//                                 <div className="flex items-center justify-between">
+//                                     <span className="text-muted-foreground flex items-center gap-2">
+//                                         <GitCommit className="w-4 h-4" /> Last Commit
+//                                     </span>
+//                                     <span className="font-medium">
+//                                         {new Date(repoDetails.pushed_at).toLocaleDateString()}
+//                                     </span>
+//                                 </div>
+
+//                                 <div className="flex items-center justify-between">
+//                                     <span className="text-muted-foreground flex items-center gap-2">
+//                                         <GitPullRequest className="w-4 h-4" /> Default Branch
+//                                     </span>
+//                                     <span className="font-medium">{repoDetails.default_branch}</span>
+//                                 </div>
+//                             </CardContent>
+//                         </Card>
+
+//                         <Card>
+//                             <CardHeader>
+//                                 <CardTitle>Languages</CardTitle>
+//                             </CardHeader>
+//                             <CardContent>
+//                                 {repoDetails.language ? (
+//                                     <div className="flex items-center justify-between">
+//                                         <div className="flex items-center gap-2">
+//                                             <div className="w-3 h-3 rounded-full bg-primary" />
+//                                             <span>{repoDetails.language}</span>
+//                                         </div>
+//                                         <span className="font-medium">100%</span>
+//                                     </div>
+//                                 ) : (
+//                                     <span className="text-muted-foreground">No language detected</span>
+//                                 )}
+//                             </CardContent>
+//                         </Card>
+//                     </div>
+//                 </div>
+//             </main>
+//         </div>
+//     );
+// };
+
+// export default RepoDetailPage;
+
+
+
+
+
+
+
+
+
+import { Octokit } from "octokit";
+
+const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+
+function sixMonthsAgoISO() {
+  const d = new Date();
+  d.setMonth(d.getMonth() - 6);
+  return d.toISOString();
+}
+
+export async function getRepoMetricsLast6Months(owner: string, repo: string) {
+  const since = sixMonthsAgoISO();
+
+  // 1) COMMITS (supports `since`)
+  // Docs: REST commits endpoints :contentReference[oaicite:4]{index=4}
+  const commits: any[] = [];
+  let page = 1;
+  while (true) {
+    const res = await octokit.request("GET /repos/{owner}/{repo}/commits", {
+      owner,
+      repo,
+      since,
+      per_page: 100,
+      page,
+    });
+    commits.push(...res.data);
+    if (res.data.length < 100) break;
+    page++;
+  }
+
+  // 2) PULL REQUESTS (no `since` param; list then filter)
+  // Docs: REST pull requests endpoints :contentReference[oaicite:5]{index=5}
+  const prs: any[] = [];
+  page = 1;
+  while (true) {
+    const res = await octokit.request("GET /repos/{owner}/{repo}/pulls", {
+      owner,
+      repo,
+      state: "all",
+      sort: "updated",
+      direction: "desc",
+      per_page: 100,
+      page,
+    });
+
+    // early stop if everything on this page is older than since (by created_at)
+    const filtered = res.data.filter((pr: any) => pr.created_at >= since);
+    prs.push(...filtered);
+
+    const oldestOnPage = res.data[res.data.length - 1]?.created_at;
+    if (res.data.length < 100 || (oldestOnPage && oldestOnPage < since)) break;
+    page++;
+  }
+
+  // 3) ISSUES (beware: issues endpoint can include PRs)
+  // Docs: REST issues endpoints :contentReference[oaicite:6]{index=6}
+  const issues: any[] = [];
+  page = 1;
+  while (true) {
+    const res = await octokit.request("GET /repos/{owner}/{repo}/issues", {
+      owner,
+      repo,
+      state: "all",
+      since, // this is "updated since", so still filter by created_at if you want creation-based charts
+      per_page: 100,
+      page,
+    });
+
+    const onlyIssues = res.data
+      .filter((it: any) => !it.pull_request)         // remove PRs
+      .filter((it: any) => it.created_at >= since);  // keep last 6 months created
+
+    issues.push(...onlyIssues);
+
+    if (res.data.length < 100) break;
+    page++;
+  }
+
+  return { since, commits, prs, issues };
+}
+
+
+
+
+
+
+export async function GET(
+  _req: Request,
+  { params }: { params: { owner: string; repo: string } }
+) {
+  const session = await getServerSession(authOptions);
+  const token = (session as any)?.githubToken as string | undefined;
+
+  if (!token) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const owner = params.owner;
+  const name = params.repo;
+
+  // Build last 6 months (oldest -> newest)
+  const now = new Date();
+  const thisMonthStart = startOfMonthUTC(now);
+
+  const months = Array.from({ length: 6 }).map((_, i) => {
+    const start = addMonthsUTC(thisMonthStart, i - 5); // 5 months ago ... current month
+    const end = addMonthsUTC(start, 1);                // next month start
+    return {
+      label: monthLabel(start),
+      startISO: start.toISOString(),
+      endISO: end.toISOString(),
+      // use YYYY-MM-DD for search qualifiers
+      startDay: isoDateOnly(start),
+      // created range inclusive: use end-1 day by using "< end"
+      endExclusiveDay: isoDateOnly(end),
+    };
+  });
+
+  // GraphQL query with aliases so we fetch everything in ONE call
+  const commitHistoryAliases = months
+    .map(
+      (m, idx) => `
+        c${idx}: history(since: "${m.startISO}", until: "${m.endISO}") { totalCount }
+      `
+    )
+    .join("\n");
+
+  const prSearchAliases = months
+    .map(
+      (m, idx) => `
+        p${idx}: search(
+          query: "repo:${owner}/${name} is:pr created:>=${m.startDay} created:<${m.endExclusiveDay}",
+          type: ISSUE,
+          first: 1
+        ) { issueCount }
+      `
+    )
+    .join("\n");
+
+  const query = `
+    query {
+      repository(owner: "${owner}", name: "${name}") {
+        defaultBranchRef {
+          target {
+            ... on Commit {
+              ${commitHistoryAliases}
+            }
+          }
+        }
+      }
+      ${prSearchAliases}
+    }
+  `;
+
+  const ghRes = await fetch("https://api.github.com/graphql", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ query }),
+  });
+
+  if (!ghRes.ok) {
+    const text = await ghRes.text();
+    return NextResponse.json(
+      { error: "GitHub GraphQL error", details: text },
+      { status: 500 }
+    );
+  }
+
+  const json = await ghRes.json();
+
+  if (json.errors?.length) {
+    return NextResponse.json({ error: json.errors }, { status: 500 });
+  }
+
+  const history = json.data?.repository?.defaultBranchRef?.target;
+  const timeline = months.map((m, idx) => ({
+    month: m.label,
+    commits: history?.[`c${idx}`]?.totalCount ?? 0,
+    prs: json.data?.[`p${idx}`]?.issueCount ?? 0,
+  }));
+
+  return NextResponse.json({ timeline });
+}

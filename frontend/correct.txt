@@ -1,0 +1,1584 @@
+"use client"
+
+import { useSession } from "next-auth/react"
+import { redirect } from "next/navigation"
+import { DashboardHeader } from "@/components/dashboard-header"
+import { ProfileCard } from "@/components/profile-card"
+import { StatsCards } from "@/components/stats-cards"
+import { LanguagesChart } from "@/components/languages-chart"
+import { TopRepositories } from "@/components/top-repositories"
+// import { Heatmap } from "@/components/heatmap"
+// import { ProductivityTrend } from "@/components/productivity-trend"
+// import { RepositoryRanking } from "@/components/repository-ranking"
+import { useGitHubData } from "@/hooks/use-github-data"
+import { Skeleton } from "@/components/ui/skeleton"
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { ProductivityTrend } from "@/components/productivity-trends"
+import { RepositoryRanking } from "@/components/repository-rankings"
+import { Heatmap } from "@/components/heatmap"
+
+export default function DashboardPage() {
+  const { data: session, status } = useSession();
+  const { userData, repos, loading, error } = useGitHubData(session?.user?.name)
+  const router = useRouter()
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      const hasOnboarded = localStorage.getItem("devmetrics_onboarded")
+      if (!hasOnboarded) {
+        router.push("/onboarding")
+      }
+    }
+  }, [status, router])
+
+  if (status === "loading" || loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <DashboardHeader />
+        <div className="container mx-auto px-4 py-8">
+          <div className="space-y-6">
+            <Skeleton className="h-32 w-full rounded-lg" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-24 w-full rounded-lg" />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (status === "unauthenticated") {
+    redirect("/auth/signin")
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-2">Error Loading Data</h1>
+          <p className="text-muted-foreground">{error}</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/5">
+      <DashboardHeader />
+
+      <div className="container mx-auto px-4 py-8">
+        <div className="space-y-8">
+          {/* Profile Section */}
+          {userData && <ProfileCard user={userData} />}
+
+          {/* Stats Cards */}
+          <StatsCards repos={repos} />
+
+          {/* Heatmap Section */}
+          <Heatmap />
+
+          {/* Charts Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <ProductivityTrend />
+            {repos && repos.length > 0 && <LanguagesChart repos={repos} />}
+          </div>
+
+          {/* Repository Ranking */}
+          {/* {repos && repos.length > 0 && <RepositoryRanking repos={repos} />} */}
+
+          {/* Top Repositories */}
+          {repos && repos.length > 0 && <TopRepositories repos={repos} />}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+
+
+CSS
+
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  /* --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0); */
+  --primary: oklch(0.55 0.18 155);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+button {
+  cursor: pointer !important;
+}
+
+
+
+/ 'use client';
+
+// import { useSession } from "next-auth/react";
+// import { redirect, useRouter } from 'next/navigation';
+// import { DashboardHeader } from "@/components/dashboard-header";
+// import { ProfileCard } from "@/components/profile-card";
+// import { StatsCards } from "@/components/stats-cards";
+// import { CommitsChart } from "@/components/commits-chart";
+// import { LanguagesChart } from "@/components/languages-chart";
+// import { TopRepositories } from "@/components/top-repositories";
+// import { Skeleton } from "@/components/ui/skeleton";
+// import { useGitHubData } from "@/hooks/use-github-data";
+// import { useEffect } from "react";
+// import { Heatmap } from "@/components/heatmap";
+// import { RepositoryRanking } from "@/components/repository-rankings";
+
+// const DashboardPage = () => {
+//     const { data: session, status } = useSession();
+//     const router = useRouter()
+
+//     const { userData, repos, loading, error } = useGitHubData(session?.user?.login);
+
+//     useEffect(() => {
+//         if (status === "authenticated") {
+//             const hasOnboarded = localStorage.getItem("devmetrics_onboarded");
+//             if (!hasOnboarded) {
+//                 router.push("/onboarding");
+//             }
+//         }
+//     }, [status, router]);
+
+//     if (status === "loading" || loading) {
+//         return (
+//             <div className="min-h-screen bg-background">
+//                 <DashboardHeader />
+//                 <div className="container mx-auto px-4 py-8">
+//                     <div className="space-y-6">
+//                         <Skeleton className="h-32 w-full rounded-lg" />
+//                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+//                             {Array.from({ length: 4 }).map((_, i) => (
+//                                 <Skeleton key={i} className="h-24 w-full rounded-lg" />
+//                             ))}
+//                         </div>
+//                     </div>
+//                 </div>
+//             </div>
+//         )
+//     }
+
+//     if (status === "unauthenticated") {
+//         redirect("/auth/signin")
+//     }
+
+//     if (error) {
+//         return (
+//             <div className="min-h-screen bg-background flex items-center justify-center">
+//                 <div className="text-center">
+//                     <h1 className="text-2xl font-bold mb-2">Error Loading Data</h1>
+//                     <p className="text-muted-foreground">{error}</p>
+//                 </div>
+//             </div>
+//         )
+//     }
+
+//     return (
+//         <div className="min-h-screen bg-linear-to-br from-background via-background to-secondary/5">
+//             <DashboardHeader />
+
+//             <div className="container mx-auto px-4 py-8">
+//                 <div className="space-y-8">
+//                     {/* Profile Section */}
+//                     {userData && <ProfileCard user={userData} />}
+
+//                     {/* Stats Cards */}
+//                     <StatsCards repos={repos} />
+
+//                     {/* Heatmap Section */}
+//                     <Heatmap />
+
+//                     {/* Charts Section */}
+//                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+//                         {repos && repos.length > 0 && (
+//                             <>
+//                                 <CommitsChart repos={repos} />
+//                                 <LanguagesChart repos={repos} />
+//                             </>
+//                         )}
+//                     </div>
+
+//                     {/* Repository Ranking */}
+//                     {repos && repos.length > 0 && <RepositoryRanking repos={repos} />}
+
+//                     {/* Top Repositories */}
+//                     {repos && repos.length > 0 && <TopRepositories repos={repos} />}
+//                 </div>
+//             </div>
+//         </div>
+//     )
+// }
+
+// export default DashboardPage;
+
+
+
+
+
+NEW DASHBOARD WITH DYNAMIC DATA
+
+
+
+
+'use client';
+
+// import type React from "react"
+
+import { useState, useEffect } from "react"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+    Activity,
+    GitCommit,
+    GitBranch,
+    GitPullRequest,
+    Code2,
+    TrendingUp,
+    TrendingDown,
+    Calendar,
+    Clock,
+    Flame,
+    Star,
+    ExternalLink,
+    Settings,
+    LogOut,
+    Bell,
+    ChevronDown,
+    BarChart3,
+    RefreshCw,
+    Sun,
+    Moon,
+} from "lucide-react"
+import { useTheme } from "next-themes"
+import {
+    Area,
+    AreaChart,
+    Bar,
+    BarChart,
+    ResponsiveContainer,
+    XAxis,
+    YAxis,
+    Tooltip,
+    CartesianGrid,
+    Cell,
+    PieChart,
+    Pie,
+} from "recharts"
+import { signOut, useSession } from "next-auth/react"
+import { useGitHubData } from "@/hooks/use-github-data"
+import { DashboardHeader } from "@/components/dashboard-header"
+import { useGithubMetrics } from "@/hooks/useGithubMetrics";
+
+// Mock data
+const commitTrendsData = [
+    { day: "Mon", commits: 12, additions: 450, deletions: 120 },
+    { day: "Tue", commits: 19, additions: 680, deletions: 230 },
+    { day: "Wed", commits: 8, additions: 220, deletions: 80 },
+    { day: "Thu", commits: 24, additions: 890, deletions: 340 },
+    { day: "Fri", commits: 15, additions: 520, deletions: 180 },
+    { day: "Sat", commits: 6, additions: 180, deletions: 60 },
+    { day: "Sun", commits: 3, additions: 90, deletions: 30 },
+]
+
+const languageData = [
+    { name: "TypeScript", value: 45, color: "#3178c6" },
+    { name: "Python", value: 25, color: "#3572A5" },
+    { name: "JavaScript", value: 15, color: "#f1e05a" },
+    { name: "Go", value: 10, color: "#00ADD8" },
+    { name: "Rust", value: 5, color: "#dea584" },
+]
+
+const prActivityData = [
+    { week: "W1", opened: 8, merged: 6, closed: 1 },
+    { week: "W2", opened: 12, merged: 10, closed: 2 },
+    { week: "W3", opened: 6, merged: 8, closed: 0 },
+    { week: "W4", opened: 15, merged: 12, closed: 1 },
+]
+
+const repoInsights = [
+    { name: "devmetrics-app", stars: 1247, commits: 847, language: "TypeScript", trend: "+12%" },
+    { name: "api-gateway", stars: 892, commits: 562, language: "Go", trend: "+8%" },
+    { name: "ml-pipeline", stars: 634, commits: 423, language: "Python", trend: "+15%" },
+    { name: "design-system", stars: 456, commits: 298, language: "TypeScript", trend: "+5%" },
+]
+
+const recentActivity = [
+    { type: "commit", repo: "devmetrics-app", message: "feat: add dashboard analytics", time: "2 hours ago" },
+    { type: "pr", repo: "api-gateway", message: "Merge: implement rate limiting", time: "4 hours ago" },
+    { type: "commit", repo: "ml-pipeline", message: "fix: resolve memory leak", time: "6 hours ago" },
+    { type: "pr", repo: "design-system", message: "Open: update button variants", time: "8 hours ago" },
+]
+
+const heatmapData = Array.from({ length: 52 }, (_, weekIndex) =>
+    Array.from({ length: 7 }, (_, dayIndex) => ({
+        week: weekIndex,
+        day: dayIndex,
+        value: Math.floor(Math.random() * 10),
+    })),
+).flat()
+
+// Custom tooltip component for proper theming
+const CustomTooltip = ({
+    active,
+    payload,
+    label,
+}: { active?: boolean; payload?: Array<{ name: string; value: number; color?: string }>; label?: string }) => {
+    if (active && payload && payload.length) {
+        return (
+            <div className="bg-popover border border-border rounded-lg p-3 shadow-lg">
+                {label && <p className="text-sm font-medium text-foreground mb-1">{label}</p>}
+                {payload.map((entry, index) => (
+                    <p key={index} className="text-sm text-muted-foreground">
+                        <span className="capitalize">{entry.name}</span>:{" "}
+                        <span className="font-medium text-foreground">{entry.value}</span>
+                    </p>
+                ))}
+            </div>
+        )
+    }
+    return null
+}
+
+// Custom pie tooltip for language chart
+const CustomPieTooltip = ({
+    active,
+    payload,
+}: { active?: boolean; payload?: Array<{ name: string; value: number; payload: { color: string } }> }) => {
+    if (active && payload && payload.length) {
+        const data = payload[0]
+        return (
+            <div className="bg-popover border border-border rounded-lg p-3 shadow-lg">
+                <div className="flex items-center gap-2">
+                    <div className="h-3 w-3 rounded-full" style={{ backgroundColor: data.payload.color }} />
+                    <span className="text-sm font-medium text-foreground">{data.name}</span>
+                </div>
+                <p className="text-sm text-muted-foreground mt-1">
+                    Usage: <span className="font-medium text-foreground">{data.value}%</span>
+                </p>
+            </div>
+        )
+    }
+    return null
+}
+
+function DashboardContent() {
+    const [mounted, setMounted] = useState(false);
+
+    const { theme, setTheme } = useTheme();
+    const { data: session, status } = useSession();
+    const { userData: user, repos, commitTrends, loading, error } = useGitHubData(session?.user?.login, (session as any)?.accessToken);
+
+    const username = session?.user?.login || ""
+    const metrics = useGithubMetrics("Marvel-Deone");
+
+    
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    const getHeatmapColor = (value: number) => {
+        if (value === 0) return "bg-muted"
+        if (value <= 2) return "bg-primary/20"
+        if (value <= 4) return "bg-primary/40"
+        if (value <= 6) return "bg-primary/60"
+        if (value <= 8) return "bg-primary/80"
+        return "bg-primary"
+    }
+
+    if (!mounted) return null
+
+    return (
+        <div className="min-h-screen bg-background">
+            <DashboardHeader />
+
+            {/* Main Content */}
+            <main className="p-6 max-w-[1600px] mx-auto">
+                {/* Welcome Section */}
+                <div className="mb-8 animate-fade-in">
+                    <h1 className="text-2xl font-bold text-foreground mb-1">
+                        Welcome back, {user?.name?.split(" ")[0] || "User"}
+                    </h1>
+                    <p className="text-muted-foreground">Here&apos;s your engineering productivity overview</p>
+                </div>
+
+                {/* Stats Overview */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <StatsCard label="Total Commits" value={metrics.commits} change="+12%" trend="up" icon={GitCommit} delay={0} />
+                    <StatsCard label="Pull Requests" value={metrics.prs} change="+8%" trend="up" icon={GitPullRequest} delay={1} />
+                    <StatsCard label="Code Reviews" value={metrics.reviews} change="+23%" trend="up" icon={Code2} delay={2} />
+                    <StatsCard label="Current Streak" value={`${metrics?.bestStreak ?? 0} days`} change={`Best: ${metrics?.bestStreak}`} trend="neutral" icon={Flame} delay={3} />
+                </div>
+
+                {/* Main Grid */}
+                <div className="grid lg:grid-cols-3 gap-6 mb-6">
+                    {/* Commit Trends - Large Card */}
+                    <Card className="lg:col-span-2 animate-slide-up stagger-1 border-border/50">
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                            <div>
+                                <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                                    <GitCommit className="h-5 w-5 text-primary" />
+                                    Commit Trends
+                                </CardTitle>
+                                <CardDescription>Your commit activity this week</CardDescription>
+                            </div>
+                            <Badge variant="secondary" className="font-mono">
+                                87 commits
+                            </Badge>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="w-full overflow-hidden h-[280px]">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <AreaChart data={commitTrends   }>
+                                        <defs>
+                                            <linearGradient id="commitGradient" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor="oklch(0.65 0.2 155)" stopOpacity={0.3} />
+                                                <stop offset="95%" stopColor="oklch(0.65 0.2 155)" stopOpacity={0} />
+                                            </linearGradient>
+                                        </defs>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.3 0.01 285)" opacity={0.3} />
+                                        <XAxis
+                                            dataKey="day"
+                                            axisLine={false}
+                                            tickLine={false}
+                                            tick={{ fill: "oklch(0.6 0 0)", fontSize: 12 }}
+                                        />
+                                        <YAxis axisLine={false} tickLine={false} tick={{ fill: "oklch(0.6 0 0)", fontSize: 12 }} />
+                                        <Tooltip content={<CustomTooltip />} />
+                                        <Area
+                                            type="monotone"
+                                            dataKey="commits"
+                                            stroke="oklch(0.65 0.2 155)"
+                                            strokeWidth={2}
+                                            fill="url(#commitGradient)"
+                                        />
+                                    </AreaChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Language Breakdown */}
+                    <Card className="animate-slide-up stagger-2 border-border/50">
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                                <BarChart3 className="h-5 w-5 text-primary" />
+                                Language Heatmap
+                            </CardTitle>
+                            <CardDescription>Code distribution by language</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="w-full overflow-hidden h-[180px] mb-4">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <PieChart>
+                                        <Pie
+                                            data={languageData}
+                                            cx="50%"
+                                            cy="50%"
+                                            innerRadius={50}
+                                            outerRadius={75}
+                                            paddingAngle={3}
+                                            dataKey="value"
+                                        >
+                                            {languageData.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={entry.color} />
+                                            ))}
+                                        </Pie>
+                                        <Tooltip content={<CustomPieTooltip />} />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            </div>
+                            <div className="space-y-2">
+                                {languageData.map((lang) => (
+                                    <div key={lang.name} className="flex items-center justify-between text-sm">
+                                        <div className="flex items-center gap-2">
+                                            <div className="h-3 w-3 rounded-full" style={{ backgroundColor: lang.color }} />
+                                            <span className="text-foreground">{lang.name}</span>
+                                        </div>
+                                        <span className="text-muted-foreground font-mono">{lang.value}%</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                <div className="grid lg:grid-cols-3 gap-6 mb-6">
+                    {/* PR Activity */}
+                    <Card className="animate-slide-up stagger-3 border-border/50">
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                                <GitPullRequest className="h-5 w-5 text-primary" />
+                                PR Activity
+                            </CardTitle>
+                            <CardDescription>Pull request statistics</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="w-full overflow-hiddenh-[200px]">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={prActivityData}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.3 0.01 285)" opacity={0.3} />
+                                        <XAxis
+                                            dataKey="week"
+                                            axisLine={false}
+                                            tickLine={false}
+                                            tick={{ fill: "oklch(0.6 0 0)", fontSize: 12 }}
+                                        />
+                                        <YAxis axisLine={false} tickLine={false} tick={{ fill: "oklch(0.6 0 0)", fontSize: 12 }} />
+                                        <Tooltip content={<CustomTooltip />} />
+                                        <Bar dataKey="opened" fill="oklch(0.6 0.15 200)" radius={[4, 4, 0, 0]} />
+                                        <Bar dataKey="merged" fill="oklch(0.65 0.2 155)" radius={[4, 4, 0, 0]} />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                            <div className="flex justify-center gap-6 mt-4">
+                                <div className="flex items-center gap-2 text-sm">
+                                    <div className="h-3 w-3 rounded-full bg-chart-2" />
+                                    <span className="text-muted-foreground">Opened</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-sm">
+                                    <div className="h-3 w-3 rounded-full bg-primary" />
+                                    <span className="text-muted-foreground">Merged</span>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Repo Insights */}
+                    <Card className="lg:col-span-2 animate-slide-up stagger-4 border-border/50">
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                                <GitBranch className="h-5 w-5 text-primary" />
+                                Repo Insights
+                            </CardTitle>
+                            <CardDescription>Your most active repositories</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-3">
+                                {repoInsights.map((repo, index) => (
+                                    <div
+                                        key={repo.name}
+                                        className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors group cursor-pointer"
+                                        style={{ animationDelay: `${index * 100}ms` }}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-10 w-10 rounded-lg bg-background flex items-center justify-center border border-border">
+                                                <GitBranch className="h-5 w-5 text-primary" />
+                                            </div>
+                                            <div>
+                                                <p className="font-medium text-foreground group-hover:text-primary transition-colors">
+                                                    {repo.name}
+                                                </p>
+                                                <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                                                    <span className="flex items-center gap-1">
+                                                        <Star className="h-3 w-3" />
+                                                        {repo.stars}
+                                                    </span>
+                                                    <span className="flex items-center gap-1">
+                                                        <GitCommit className="h-3 w-3" />
+                                                        {repo.commits}
+                                                    </span>
+                                                    <Badge variant="outline" className="text-xs py-0">
+                                                        {repo.language}
+                                                    </Badge>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-sm text-primary font-medium">{repo.trend}</span>
+                                            <ExternalLink className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                {/* Contribution Heatmap & Recent Activity */}
+                <div className="grid lg:grid-cols-3 gap-6 min-w-0">
+                    {/* Contribution Heatmap */}
+                    <Card className="lg:col-span-2 min-w-0 animate-slide-up stagger-5 border-border/50">
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                                <Calendar className="h-5 w-5 text-primary" />
+                                Contribution Graph
+                            </CardTitle>
+                            <CardDescription>Your activity over the past year</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="overflow-x-auto pb-2">
+                                <div className="flex gap-1 w-max">
+                                    {Array.from({ length: 52 }, (_, weekIndex) => (
+                                        <div key={weekIndex} className="flex flex-col gap-1">
+                                            {Array.from({ length: 7 }, (_, dayIndex) => {
+                                                const dataPoint = heatmapData.find((d) => d.week === weekIndex && d.day === dayIndex)
+                                                return (
+                                                    <div
+                                                        key={dayIndex}
+                                                        className={`h-3 w-3 rounded-sm ${getHeatmapColor(dataPoint?.value || 0)} transition-all hover:scale-125`}
+                                                        title={`${dataPoint?.value || 0} contributions`}
+                                                    />
+                                                )
+                                            })}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                            <div className="flex items-center justify-end gap-2 mt-4 text-xs text-muted-foreground">
+                                <span>Less</span>
+                                <div className="flex gap-1">
+                                    <div className="h-3 w-3 rounded-sm bg-muted" />
+                                    <div className="h-3 w-3 rounded-sm bg-primary/20" />
+                                    <div className="h-3 w-3 rounded-sm bg-primary/40" />
+                                    <div className="h-3 w-3 rounded-sm bg-primary/60" />
+                                    <div className="h-3 w-3 rounded-sm bg-primary" />
+                                </div>
+                                <span>More</span>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Recent Activity */}
+                    <Card className="animate-slide-up stagger-5 border-border/50">
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                                <Clock className="h-5 w-5 text-primary" />
+                                Recent Activity
+                            </CardTitle>
+                            <CardDescription>Your latest actions</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-4">
+                                {recentActivity.map((activity, index) => (
+                                    <div key={index} className="flex gap-3">
+                                        <div
+                                            className={`h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0 ${activity.type === "commit" ? "bg-primary/10" : "bg-chart-2/10"
+                                                }`}
+                                        >
+                                            {activity.type === "commit" ? (
+                                                <GitCommit className="h-4 w-4 text-primary" />
+                                            ) : (
+                                                <GitPullRequest className="h-4 w-4 text-chart-2" />
+                                            )}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm text-foreground truncate">{activity.message}</p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {activity.repo} · {activity.time}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            </main>
+        </div>
+    )
+}
+
+function StatsCard({
+    label,
+    value,
+    change,
+    trend,
+    icon: Icon,
+    delay,
+}: {
+    label: string
+    value: string | number
+    change: string
+    trend: "up" | "down" | "neutral"
+    icon: React.ElementType
+    delay: number
+}) {
+    return (
+        <Card className="animate-slide-up border-border/50" style={{ animationDelay: `${delay * 100}ms` }}>
+            <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-2">
+                    <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <Icon className="h-4 w-4 text-primary" />
+                    </div>
+                    <div
+                        className={`flex items-center gap-1 text-xs font-medium ${trend === "up" ? "text-green-500" : trend === "down" ? "text-red-500" : "text-muted-foreground"
+                            }`}
+                    >
+                        {trend === "up" && <TrendingUp className="h-3 w-3" />}
+                        {trend === "down" && <TrendingDown className="h-3 w-3" />}
+                        {change}
+                    </div>
+                </div>
+                <p className="text-2xl font-bold text-foreground">{value}</p>
+                <p className="text-xs text-muted-foreground">{label}</p>
+            </CardContent>
+        </Card>
+    )
+}
+
+export default function DashboardPage() {
+    return (
+        <DashboardContent />
+    )
+}
+
+
+     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <StatCard
+          icon={<Star className="w-8 h-8 text-yellow-500 mb-2" />}
+          value={repoDetails.stargazers_count}
+          label="Stars"
+        />
+        <StatCard
+          icon={<GitFork className="w-8 h-8 text-blue-500 mb-2" />}
+          value={repoDetails.forks_count}
+          label="Forks"
+        />
+        <StatCard
+          icon={<AlertCircle className="w-8 h-8 text-red-500 mb-2" />}
+          value={repoDetails.open_issues_count}
+          label="Open Issues"
+        />
+        <StatCard
+          icon={<HardDrive className="w-8 h-8 text-muted-foreground mb-2" />}
+          value={formatBytesFromKb(repoDetails.size)}
+          label="Size"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Activity Timeline */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle>Activity Timeline</CardTitle>
+            <CardDescription>
+              Commits and Pull Requests over the last 6 months (mock data)
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent>
+            <ChartContainer
+              config={{
+                commits: { label: "Commits", color: "hsl(var(--primary))" },
+                prs: { label: "PRs", color: "hsl(var(--secondary))" },
+              }}
+              className="h-[300px]"
+            >
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={timelineData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="month" tickLine={false} axisLine={false} />
+                  <YAxis tickLine={false} axisLine={false} />
+                  <Tooltip content={<ChartTooltipContent />} />
+                  <Bar
+                    dataKey="commits"
+                    fill="var(--color-commits)"
+                    radius={[4, 4, 0, 0]}
+                  />
+                  <Bar
+                    dataKey="prs"
+                    fill="var(--color-prs)"
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+
+        {/* Right column */}
+        <div className="space-y-6">
+          {/* Details */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Details</CardTitle>
+            </CardHeader>
+
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground flex items-center gap-2">
+                  <Users className="w-4 h-4" /> Contributors
+                </span>
+                <span className="font-medium">—</span>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground flex items-center gap-2">
+                  <Calendar className="w-4 h-4" /> Created
+                </span>
+                <span className="font-medium">{formatDate(repoDetails.created_at)}</span>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground flex items-center gap-2">
+                  <GitCommit className="w-4 h-4" /> Last push
+                </span>
+                <span className="font-medium">{formatDate(repoDetails.pushed_at)}</span>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground flex items-center gap-2">
+                  <GitPullRequest className="w-4 h-4" /> Default branch
+                </span>
+                <span className="font-medium">{repoDetails.default_branch || "—"}</span>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground flex items-center gap-2">
+                  <Calendar className="w-4 h-4" /> Updated
+                </span>
+                <span className="font-medium">{formatDate(repoDetails.updated_at)}</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Languages */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Languages</CardTitle>
+              <CardDescription>Primary language (from repo metadata)</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {repoDetails.language ? (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-primary" />
+                    <span>{repoDetails.language}</span>
+                  </div>
+                  <span className="font-medium">Primary</span>
+                </div>
+              ) : (
+                <span className="text-muted-foreground">No language detected</span>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Features */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Features</CardTitle>
+              <CardDescription>Repository capabilities</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {[
+                { label: "Issues", ok: repoDetails.has_issues },
+                { label: "Projects", ok: repoDetails.has_projects },
+                { label: "Wiki", ok: repoDetails.has_wiki },
+                { label: "Pages", ok: repoDetails.has_pages },
+                { label: "Discussions", ok: repoDetails.has_discussions },
+              ].map((f) => (
+                <div key={f.label} className="flex items-center justify-between">
+                  <span className="text-muted-foreground">{f.label}</span>
+                  {f.ok ? (
+                    <span className="inline-flex items-center gap-1 font-medium">
+                      <CheckCircle2 className="h-4 w-4" /> Enabled
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 text-muted-foreground">
+                      <XCircle className="h-4 w-4" /> Off
+                    </span>
+                  )}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          {/* Access / Permissions */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-4 w-4" /> Access
+              </CardTitle>
+              <CardDescription>Your permission level for this repo</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-wrap gap-2">
+              {permBadges
+                .filter((p) => Boolean(perms?.[p.key]))
+                .map((p) => (
+                  <Badge key={p.key} variant="secondary">
+                    {p.label}
+                  </Badge>
+                ))}
+
+              {!permBadges.some((p) => Boolean(perms?.[p.key])) ? (
+                <span className="text-muted-foreground text-sm">No permission info</span>
+              ) : null}
+            </CardContent>
+          </Card>
+
+          {/* Links / Clone */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Links</CardTitle>
+              <CardDescription>Quick access & cloning</CardDescription>
+            </CardHeader>
+
+            <CardContent className="space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-muted-foreground flex items-center gap-2">
+                  <ExternalLink className="h-4 w-4" /> GitHub
+                </span>
+                <Button asChild variant="outline" size="sm">
+                  <a href={repoDetails.html_url} target="_blank" rel="noopener noreferrer">
+                    Open
+                  </a>
+                </Button>
+              </div>
+
+              {hasHomepage ? (
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-muted-foreground flex items-center gap-2">
+                    <LinkIcon className="h-4 w-4" /> Website
+                  </span>
+                  <Button asChild variant="outline" size="sm">
+                    <a href={repoDetails.homepage} target="_blank" rel="noopener noreferrer">
+                      Open
+                    </a>
+                  </Button>
+                </div>
+              ) : null}
+
+              <div className="space-y-2 pt-2">
+                <div className="text-sm font-medium flex items-center gap-2">
+                  <GitCommit className="h-4 w-4" /> Clone
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 truncate rounded-md border px-3 py-2 text-sm text-muted-foreground">
+                    {repoDetails.clone_url || "—"}
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => repoDetails.clone_url && copyToClipboard(repoDetails.clone_url)}
+                    aria-label="Copy HTTPS clone URL"
+                    disabled={!repoDetails.clone_url}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 truncate rounded-md border px-3 py-2 text-sm text-muted-foreground">
+                    {repoDetails.ssh_url || "—"}
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => repoDetails.ssh_url && copyToClipboard(repoDetails.ssh_url)}
+                    aria-label="Copy SSH clone URL"
+                    disabled={!repoDetails.ssh_url}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+
+
+      timelineData
+
+      // "use client";
+
+// import { useSession } from "next-auth/react";
+// import { useParams, useRouter } from "next/navigation";
+// import { DashboardHeader } from "@/components/dashboard-header";
+// import { Button } from "@/components/ui/button";
+// import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+// import { Skeleton } from "@/components/ui/skeleton";
+// import {
+//     ArrowLeft,
+//     Star,
+//     GitFork,
+//     Eye,
+//     ExternalLink,
+//     Calendar,
+//     GitCommit,
+//     GitPullRequest,
+//     AlertCircle,
+//     Users,
+// } from "lucide-react";
+// import { useGitHubData } from "@/hooks/use-github-data";
+// import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
+// import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
+// import { useRepoDetails } from "@/hooks/use-repo-details";
+
+// const RepoDetailPage = () => {
+//     // // Mock timeline data
+//     const timelineData = [
+//         { month: "Jan", commits: 12, prs: 2 },
+//         { month: "Feb", commits: 18, prs: 4 },
+//         { month: "Mar", commits: 24, prs: 3 },
+//         { month: "Apr", commits: 15, prs: 5 },
+//         { month: "May", commits: 32, prs: 8 },
+//         { month: "Jun", commits: 28, prs: 6 },
+//     ];
+
+//     const params = useParams();
+//     const router = useRouter();
+//     const { data: session, status } = useSession();
+
+//     const loggedInUser = params.username as string;
+//     const repoName = params.name as string;
+
+//     const loginName = session?.user?.login ?? "";
+//     const token = (session as any)?.githubToken ?? "";
+
+//     console.log("session status:", status);
+//     console.log("loginName:", loginName);
+//     console.log("repoName:", repoName);
+//     console.log("token exists:", Boolean(token), token?.slice?.(0, 6));
+
+
+//     const { repoDetails, loading, error } = useRepoDetails(loggedInUser, repoName, token);
+
+//     console.log('repoDetails:', repoDetails);
+
+//     if (status === "loading" || loading) {
+//         return (
+//             <div className="min-h-screen bg-background">
+//                 <DashboardHeader />
+//                 <div className="container mx-auto px-4 py-8 space-y-6">
+//                     <Skeleton className="h-8 w-32" />
+//                     <Skeleton className="h-64 w-full" />
+//                     <div className="grid grid-cols-3 gap-4">
+//                         <Skeleton className="h-32" />
+//                         <Skeleton className="h-32" />
+//                         <Skeleton className="h-32" />
+//                     </div>
+//                 </div>
+//             </div>
+//         );
+//     }
+
+//     // ✅ if not logged in, show a “sign in” style state (or redirect)
+//     if (status === "unauthenticated") {
+//         return (
+//             <div className="min-h-screen bg-background">
+//                 <DashboardHeader />
+//                 <div className="container mx-auto px-4 py-8 text-center">
+//                     <h1 className="text-2xl font-bold">Please sign in</h1>
+//                     <Button onClick={() => router.back()} className="mt-4">Go Back</Button>
+//                 </div>
+//             </div>
+//         );
+//     }
+
+//     if (!repoDetails || error) {
+//         return (
+//             <div className="min-h-screen bg-background">
+//                 <DashboardHeader />
+//                 <div className="container mx-auto px-4 py-8 text-center">
+//                     <h1 className="text-2xl font-bold">Failed to load repository</h1>
+//                     <p className="mt-2 text-muted-foreground">{error}</p>
+//                     <Button onClick={() => router.back()} className="mt-4">Go Back</Button>
+//                 </div>
+//             </div>
+//         );
+//     }
+
+//     return (
+//         <div className="min-h-screen bg-background">
+//             <DashboardHeader />
+//             <main className="container mx-auto px-4 py-8 space-y-8">
+
+//                 {/* Back Button */}
+//                 <div className="flex flex-col gap-4">
+//                     <Button
+//                         variant="ghost"
+//                         className="w-fit pl-0 hover:pl-2 transition-all"
+//                         onClick={() => router.back()}
+//                     >
+//                         <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
+//                     </Button>
+
+//                     {/* Repo Title + View on GitHub */}
+//                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+//                         <div>
+//                             <h1 className="text-4xl font-bold tracking-tight">{repoDetails.name}</h1>
+//                             <p className="text-muted-foreground text-lg mt-2 max-w-2xl">
+//                                 {repoDetails.description}
+//                             </p>
+//                         </div>
+
+//                         <Button asChild className="gap-2">
+//                             <a
+//                                 href={repoDetails.html_url}
+//                                 target="_blank"
+//                                 rel="noopener noreferrer"
+//                             >
+//                                 View on GitHub <ExternalLink className="w-4 h-4" />
+//                             </a>
+//                         </Button>
+//                     </div>
+//                 </div>
+
+//                 {/* Key Metrics Grid */}
+//                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+//                     <Card className="bg-card/50">
+//                         <CardContent className="flex flex-col items-center justify-center p-6 text-center">
+//                             <Star className="w-8 h-8 text-yellow-500 mb-2" />
+//                             <span className="text-2xl font-bold">{repoDetails.stargazers_count}</span>
+//                             <span className="text-sm text-muted-foreground">Stars</span>
+//                         </CardContent>
+//                     </Card>
+
+//                     <Card className="bg-card/50">
+//                         <CardContent className="flex flex-col items-center justify-center p-6 text-center">
+//                             <GitFork className="w-8 h-8 text-blue-500 mb-2" />
+//                             <span className="text-2xl font-bold">{repoDetails.forks_count}</span>
+//                             <span className="text-sm text-muted-foreground">Forks</span>
+//                         </CardContent>
+//                     </Card>
+
+//                     <Card className="bg-card/50">
+//                         <CardContent className="flex flex-col items-center justify-center p-6 text-center">
+//                             <AlertCircle className="w-8 h-8 text-red-500 mb-2" />
+//                             <span className="text-2xl font-bold">{repoDetails.open_issues_count}</span>
+//                             <span className="text-sm text-muted-foreground">Open Issues</span>
+//                         </CardContent>
+//                     </Card>
+
+//                     <Card className="bg-card/50">
+//                         <CardContent className="flex flex-col items-center justify-center p-6 text-center">
+//                             <Eye className="w-8 h-8 text-green-500 mb-2" />
+//                             <span className="text-2xl font-bold">{repoDetails.watchers_count}</span>
+//                             <span className="text-sm text-muted-foreground">Watchers</span>
+//                         </CardContent>
+//                     </Card>
+//                 </div>
+
+//                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+//                     {/* Activity Timeline */}
+//                     <Card className="lg:col-span-2">
+//                         <CardHeader>
+//                             <CardTitle>Activity Timeline</CardTitle>
+//                             <CardDescription>
+//                                 Commits and Pull Requests over the last 6 months
+//                             </CardDescription>
+//                         </CardHeader>
+
+//                                 <CardContent>
+//                                     <ChartContainer
+//                                         config={{
+//                                             commits: { label: "Commits", color: "hsl(var(--primary))" },
+//                                             prs: { label: "PRs", color: "hsl(var(--secondary))" },
+//                                         }}
+//                                         className="h-[300px]"
+//                                     >
+//                                         <ResponsiveContainer width="100%" height="100%">
+//                                             <BarChart data={timelineData}>
+//                                                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
+//                                                 <XAxis dataKey="month" tickLine={false} axisLine={false} />
+//                                                 <YAxis tickLine={false} axisLine={false} />
+//                                                 <Tooltip content={<ChartTooltipContent />} />
+//                                                 <Bar dataKey="commits" fill="var(--color-commits)" radius={[4, 4, 0, 0]} />
+//                                                 <Bar dataKey="prs" fill="var(--color-prs)" radius={[4, 4, 0, 0]} />
+//                                             </BarChart>
+//                                         </ResponsiveContainer>
+//                                     </ChartContainer>
+//                                 </CardContent>
+//                     </Card>
+
+//                     {/* Repo Details Card */}
+//                     <div className="space-y-6">
+//                         <Card>
+//                             <CardHeader>
+//                                 <CardTitle>Details</CardTitle>
+//                             </CardHeader>
+//                             <CardContent className="space-y-4">
+//                                 <div className="flex items-center justify-between">
+//                                     <span className="text-muted-foreground flex items-center gap-2">
+//                                         <Users className="w-4 h-4" /> Contributors
+//                                     </span>
+//                                     <span className="font-medium">12</span>
+//                                 </div>
+
+//                                 <div className="flex items-center justify-between">
+//                                     <span className="text-muted-foreground flex items-center gap-2">
+//                                         <Calendar className="w-4 h-4" /> Created
+//                                     </span>
+//                                     <span className="font-medium">
+//                                         {new Date(repoDetails?.created_at).toLocaleDateString()}
+//                                     </span>
+//                                 </div>
+
+//                                 <div className="flex items-center justify-between">
+//                                     <span className="text-muted-foreground flex items-center gap-2">
+//                                         <GitCommit className="w-4 h-4" /> Last Commit
+//                                     </span>
+//                                     <span className="font-medium">
+//                                         {new Date(repoDetails.pushed_at).toLocaleDateString()}
+//                                     </span>
+//                                 </div>
+
+//                                 <div className="flex items-center justify-between">
+//                                     <span className="text-muted-foreground flex items-center gap-2">
+//                                         <GitPullRequest className="w-4 h-4" /> Default Branch
+//                                     </span>
+//                                     <span className="font-medium">{repoDetails.default_branch}</span>
+//                                 </div>
+//                             </CardContent>
+//                         </Card>
+
+//                         <Card>
+//                             <CardHeader>
+//                                 <CardTitle>Languages</CardTitle>
+//                             </CardHeader>
+//                             <CardContent>
+//                                 {repoDetails.language ? (
+//                                     <div className="flex items-center justify-between">
+//                                         <div className="flex items-center gap-2">
+//                                             <div className="w-3 h-3 rounded-full bg-primary" />
+//                                             <span>{repoDetails.language}</span>
+//                                         </div>
+//                                         <span className="font-medium">100%</span>
+//                                     </div>
+//                                 ) : (
+//                                     <span className="text-muted-foreground">No language detected</span>
+//                                 )}
+//                             </CardContent>
+//                         </Card>
+//                     </div>
+//                 </div>
+//             </main>
+//         </div>
+//     );
+// };
+
+// export default RepoDetailPage;
+
+
+
+
+
+
+
+
+
+import { Octokit } from "octokit";
+
+const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+
+function sixMonthsAgoISO() {
+  const d = new Date();
+  d.setMonth(d.getMonth() - 6);
+  return d.toISOString();
+}
+
+export async function getRepoMetricsLast6Months(owner: string, repo: string) {
+  const since = sixMonthsAgoISO();
+
+  // 1) COMMITS (supports `since`)
+  // Docs: REST commits endpoints :contentReference[oaicite:4]{index=4}
+  const commits: any[] = [];
+  let page = 1;
+  while (true) {
+    const res = await octokit.request("GET /repos/{owner}/{repo}/commits", {
+      owner,
+      repo,
+      since,
+      per_page: 100,
+      page,
+    });
+    commits.push(...res.data);
+    if (res.data.length < 100) break;
+    page++;
+  }
+
+  // 2) PULL REQUESTS (no `since` param; list then filter)
+  // Docs: REST pull requests endpoints :contentReference[oaicite:5]{index=5}
+  const prs: any[] = [];
+  page = 1;
+  while (true) {
+    const res = await octokit.request("GET /repos/{owner}/{repo}/pulls", {
+      owner,
+      repo,
+      state: "all",
+      sort: "updated",
+      direction: "desc",
+      per_page: 100,
+      page,
+    });
+
+    // early stop if everything on this page is older than since (by created_at)
+    const filtered = res.data.filter((pr: any) => pr.created_at >= since);
+    prs.push(...filtered);
+
+    const oldestOnPage = res.data[res.data.length - 1]?.created_at;
+    if (res.data.length < 100 || (oldestOnPage && oldestOnPage < since)) break;
+    page++;
+  }
+
+  // 3) ISSUES (beware: issues endpoint can include PRs)
+  // Docs: REST issues endpoints :contentReference[oaicite:6]{index=6}
+  const issues: any[] = [];
+  page = 1;
+  while (true) {
+    const res = await octokit.request("GET /repos/{owner}/{repo}/issues", {
+      owner,
+      repo,
+      state: "all",
+      since, // this is "updated since", so still filter by created_at if you want creation-based charts
+      per_page: 100,
+      page,
+    });
+
+    const onlyIssues = res.data
+      .filter((it: any) => !it.pull_request)         // remove PRs
+      .filter((it: any) => it.created_at >= since);  // keep last 6 months created
+
+    issues.push(...onlyIssues);
+
+    if (res.data.length < 100) break;
+    page++;
+  }
+
+  return { since, commits, prs, issues };
+}
+
+
+
+
+
+
+export async function GET(
+  _req: Request,
+  { params }: { params: { owner: string; repo: string } }
+) {
+  const session = await getServerSession(authOptions);
+  const token = (session as any)?.githubToken as string | undefined;
+
+  if (!token) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const owner = params.owner;
+  const name = params.repo;
+
+  // Build last 6 months (oldest -> newest)
+  const now = new Date();
+  const thisMonthStart = startOfMonthUTC(now);
+
+  const months = Array.from({ length: 6 }).map((_, i) => {
+    const start = addMonthsUTC(thisMonthStart, i - 5); // 5 months ago ... current month
+    const end = addMonthsUTC(start, 1);                // next month start
+    return {
+      label: monthLabel(start),
+      startISO: start.toISOString(),
+      endISO: end.toISOString(),
+      // use YYYY-MM-DD for search qualifiers
+      startDay: isoDateOnly(start),
+      // created range inclusive: use end-1 day by using "< end"
+      endExclusiveDay: isoDateOnly(end),
+    };
+  });
+
+  // GraphQL query with aliases so we fetch everything in ONE call
+  const commitHistoryAliases = months
+    .map(
+      (m, idx) => `
+        c${idx}: history(since: "${m.startISO}", until: "${m.endISO}") { totalCount }
+      `
+    )
+    .join("\n");
+
+  const prSearchAliases = months
+    .map(
+      (m, idx) => `
+        p${idx}: search(
+          query: "repo:${owner}/${name} is:pr created:>=${m.startDay} created:<${m.endExclusiveDay}",
+          type: ISSUE,
+          first: 1
+        ) { issueCount }
+      `
+    )
+    .join("\n");
+
+  const query = `
+    query {
+      repository(owner: "${owner}", name: "${name}") {
+        defaultBranchRef {
+          target {
+            ... on Commit {
+              ${commitHistoryAliases}
+            }
+          }
+        }
+      }
+      ${prSearchAliases}
+    }
+  `;
+
+  const ghRes = await fetch("https://api.github.com/graphql", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ query }),
+  });
+
+  if (!ghRes.ok) {
+    const text = await ghRes.text();
+    return NextResponse.json(
+      { error: "GitHub GraphQL error", details: text },
+      { status: 500 }
+    );
+  }
+
+  const json = await ghRes.json();
+
+  if (json.errors?.length) {
+    return NextResponse.json({ error: json.errors }, { status: 500 });
+  }
+
+  const history = json.data?.repository?.defaultBranchRef?.target;
+  const timeline = months.map((m, idx) => ({
+    month: m.label,
+    commits: history?.[`c${idx}`]?.totalCount ?? 0,
+    prs: json.data?.[`p${idx}`]?.issueCount ?? 0,
+  }));
+
+  return NextResponse.json({ timeline });
+}

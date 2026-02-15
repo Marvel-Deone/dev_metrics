@@ -1,0 +1,27 @@
+{
+  "default_branch": "main",
+  "branches": [
+    "dev",
+    "fix/github-profile-metrics",
+    "fola",
+    "main",
+    "origin",
+    "vercel/react-server-components-cve-vu-v585za"
+  ],
+  "parent": {
+    "dev": "main",
+    "fix/github-profile-metrics": "main",
+    "fola": "main",
+    "main": null,
+    "origin": "main",
+    "vercel/react-server-components-cve-vu-v585za": "main"
+  },
+  "order": [
+    "main",
+    "dev",
+    "fix/github-profile-metrics",
+    "fola",
+    "origin",
+    "vercel/react-server-components-cve-vu-v585za"
+  ]
+}

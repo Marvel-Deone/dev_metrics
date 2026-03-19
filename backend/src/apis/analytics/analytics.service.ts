@@ -6,31 +6,31 @@ export class AnalyticsService {
     constructor(private authService: AuthService) { }
 
     async getOverview(user: any) {
-        const githubToken = this.authService.getGithubToken(user.userId);
+        const githubToken = await this.authService.getGithubToken(user.userId);
 
         if (!githubToken) {
             throw new UnauthorizedException('GitHub token not found');
         }
 
         const query = `
-      query {
-        viewer {
-          contributionsCollection {
-            totalCommitContributions
-            totalPullRequestContributions
-            totalPullRequestReviewContributions
-            contributionCalendar {
-              totalContributions
-              weeks {
-                contributionDays {
-                  date
-                  contributionCount
+        query {
+            viewer {
+            contributionsCollection {
+                totalCommitContributions
+                totalPullRequestContributions
+                totalPullRequestReviewContributions
+                contributionCalendar {
+                totalContributions
+                weeks {
+                    contributionDays {
+                    date
+                    contributionCount
+                    }
                 }
-              }
+                }
             }
-          }
+            }
         }
-      }
     `;
 
         try {
@@ -57,14 +57,14 @@ export class AnalyticsService {
             const days = contrib.contributionCalendar.weeks
                 .flatMap((week: any) => week.contributionDays);
 
-            // 🔥 Calculate streak
+            // Calculate streak
             let streak = 0;
             for (let i = days.length - 1; i >= 0; i--) {
                 if (days[i].contributionCount > 0) streak++;
                 else break;
             }
 
-            // 🔥 Best streak
+            // Best streak
             let best = 0;
             let current = 0;
 

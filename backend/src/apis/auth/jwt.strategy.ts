@@ -12,11 +12,18 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
+  // async validate(payload: any) {
+  //   return {
+  //     sub: payload.sub,  // internal DB user ID
+  //     // email: user.email,
+  //     // login: payload.login,
+  //     // githubToken: payload.githubToken,
+  //   };
+  // }
+
   async validate(payload: any) {
     return {
-      userId: payload.sub,
-      login: payload.login,
-      githubToken: payload.githubToken,
+      userId: payload.userId,
     };
   }
 }

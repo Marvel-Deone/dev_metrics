@@ -6,6 +6,7 @@ import { GithubModule } from './apis/github/github.module';
 import { ReposModule } from './apis/repos/repos.module';
 import { MetricsModule } from './apis/metrics/metrics.module';
 import { AnalyticsModule } from './apis/analytics/analytics.module';
+import { PrismaModule } from './database/prisma/prisma.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { AnalyticsModule } from './apis/analytics/analytics.module';
     ReposModule,
     MetricsModule,
     AnalyticsModule,
+    PrismaModule,
   ],
   // controllers: [AppController],
   // providers: [AppService],

@@ -1,0 +1,131 @@
+generator client {
+  provider = "prisma-client-js"
+  // output   = "../generated/prisma"
+  // provider = "prisma-client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id                  String               @id @default(uuid())
+  email               String?              @unique
+  githubId            String               @unique
+  githubAccessToken   String?
+  username            String?
+  avatarUrl           String?
+  onboardingCompleted Boolean              @default(false)
+  goal                String?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  repositories        Repository[]         @relation("UserRepositories")
+  metricSnapshots     UserMetricSnapshot[]
+  memberships         WorkspaceMember[]
+}
+
+model Workspace {
+  id                  String               @id @default(uuid())
+  name                String
+  description         String?
+  createdAt           DateTime             @default(now())
+  repositories        Repository[]
+  teamMetricSnapshots TeamMetricSnapshot[]
+  members             WorkspaceMember[]
+}
+
+model WorkspaceMember {
+  id          String        @id @default(uuid())
+  userId      String
+  workspaceId String
+  role        WorkspaceRole
+  joinedAt    DateTime      @default(now())
+  user        User          @relation(fields: [userId], references: [id])
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id])
+
+  @@unique([userId, workspaceId])
+  @@index([workspaceId])
+}
+
+model Repository {
+  id              String               @id @default(uuid())
+  githubRepoId    String               @unique
+  name            String
+  owner           String
+  isPrivate       Boolean
+  workspaceId     String
+  createdAt       DateTime             @default(now())
+  userId          String?
+  pullRequests    PullRequest[]
+  metricSnapshots RepoMetricSnapshot[]
+  user            User?                @relation("UserRepositories", fields: [userId], references: [id])
+  workspace       Workspace            @relation(fields: [workspaceId], references: [id])
+}
+
+model PullRequest {
+  id           String     @id @default(uuid())
+  githubPrId   String
+  repositoryId String
+  authorId     String
+  state        String
+  reviewers    String[]
+  openedAt     DateTime
+  mergedAt     DateTime?
+  closedAt     DateTime?
+  repository   Repository @relation(fields: [repositoryId], references: [id])
+
+  @@index([repositoryId])
+  @@index([openedAt])
+  @@index([mergedAt])
+}
+
+model UserMetricSnapshot {
+  id          String   @id @default(uuid())
+  userId      String
+  date        DateTime
+  commits     Int
+  prsOpened   Int
+  prsMerged   Int
+  reviews     Int
+  activeHours Int
+  afterHours  Int
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, date])
+  @@index([userId, date])
+}
+
+model TeamMetricSnapshot {
+  id                String    @id @default(uuid())
+  workspaceId       String
+  date              DateTime
+  totalCommits      Int
+  totalPRs          Int
+  avgLeadTime       Float
+  deploymentFreq    Float
+  changeFailureRate Float?
+  workspace         Workspace @relation(fields: [workspaceId], references: [id])
+
+  @@unique([workspaceId, date])
+  @@index([workspaceId, date])
+}
+
+model RepoMetricSnapshot {
+  id            String     @id @default(uuid())
+  repositoryId  String
+  date          DateTime
+  commits       Int
+  prsOpened     Int
+  prsMerged     Int
+  avgReviewTime Float
+  avgMergeTime  Float
+  repository    Repository @relation(fields: [repositoryId], references: [id])
+
+  @@unique([repositoryId, date])
+  @@index([repositoryId, date])
+}
+
+enum WorkspaceRole {
+  ADMIN
+  MEMBER
+}

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Briefcase, LineChart, Users, Trophy } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 interface StepGoalsProps {
   onNext: () => void;
@@ -38,6 +39,30 @@ const GOALS = [
 
 const StepGoals = ({ onNext }: StepGoalsProps) => {
   const [selected, setSelected] = useState<string | null>(null)
+  const { data: session } = useSession();
+
+  const handleContinue = async () => {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/onboarding`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session?.backendToken}`,
+      },
+      body: JSON.stringify({
+        goal: selected
+      }),
+    });
+    console.log('dddggf:', res)
+
+    const data = await res.json()
+
+    if (res) {
+      localStorage.setItem('devmetrics_onboarded', data.onboardingCompleted)
+    }
+    // await 
+    // onNext();
+
+  }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -78,7 +103,12 @@ const StepGoals = ({ onNext }: StepGoalsProps) => {
           </div>
 
           <div className="flex justify-end">
-            <Button size="lg" onClick={onNext} disabled={!selected} className="w-full md:w-auto px-8">
+            <Button
+              size="lg"
+              // onClick={onNext}
+              disabled={!selected}
+              onClick={handleContinue}
+              className="w-full md:w-auto px-8">
               Continue
             </Button>
           </div>

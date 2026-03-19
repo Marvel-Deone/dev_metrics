@@ -153,12 +153,12 @@ function DashboardContent() {
         if (status === "authenticated") {
             const hasOnboarded = localStorage.getItem("devmetrics_onboarded")
             if (!hasOnboarded) {
-                router.push("/onboarding")
+                router.replace("/onboarding")
                 return
             }
             return
         }
-    }, [status, router])
+    }, [router])
 
     const contributionMap = React.useMemo(() => {
         return new Map(
@@ -228,7 +228,7 @@ function DashboardContent() {
                                 <CardDescription>Your commit activity this week</CardDescription>
                             </div>
                             <Badge variant="secondary" className="font-mono">
-                                {/* {commitTrends?.reduce((sum, c) => sum + (c.commits ?? 0), 0) ?? 0} commits */}
+                                {commitTrends?.reduce((sum, c) => sum + (c.commits ?? 0), 0) ?? 0} commits
                             </Badge>
                         </CardHeader>
                         <CardContent>

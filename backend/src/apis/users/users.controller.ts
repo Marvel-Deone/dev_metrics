@@ -1,7 +1,9 @@
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { CompleteOnboardingDto } from './dtos/onboarding.dto';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -13,9 +15,24 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 export class UsersController {
     constructor(private readonly usersService: UsersService) { }
 
+    @UseGuards(JwtAuthGuard)
     @Get('profile')
     @ApiOperation({ summary: 'Get authenticated user profile & metrics' })
-    async getProfile(@Req() req: any) {
-        return this.usersService.getProfile(req.user);
+    async getProfile(@CurrentUser() user: { userId: string }) {
+        return this.usersService.getProfile(user.userId);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Patch('onboarding')
+    async completeOnboarding(
+        @Req() req,
+        @Body() dto: CompleteOnboardingDto,
+    ) {
+        console.log('HIddd:');
+        
+        return this.usersService.completeOnboarding(
+            req.user.userId,
+            dto.goal,
+        );
     }
 }

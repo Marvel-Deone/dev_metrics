@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { VersioningType } from '@nestjs/common';
@@ -27,6 +28,7 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('_x6f/docs', app, document);
+  console.log(process.env.DATABASE_URL);
 
   await app.listen(process.env.PORT ?? 4000);
 }

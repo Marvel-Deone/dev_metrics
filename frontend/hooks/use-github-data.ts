@@ -99,9 +99,12 @@ export function useGitHubData() {
         setLoading(true);
 
         const res = await apiFetch(`/users/profile`);
-
+        console.log('resfData:', res);
+        
         setData(res);
       } catch (err: any) {
+        console.log('Reserr:', err);
+        
         setError(err.message);
       } finally {
         setLoading(false);

@@ -50,6 +50,8 @@ import {
 import { ChartContainer } from "@/components/ui/chart";
 
 import { useRepoProfile } from "@/hooks/use-repo-profile";
+import { useToast } from "@/hooks/use-toast";
+import { Toaster } from "@/components/ui/toaster";
 
 function PageShell({ children }: { children: React.ReactNode }) {
     return (
@@ -152,10 +154,12 @@ export default function RepoDetailPage() {
     const owner = (params.username as string) ?? "";
     const repoName = (params.name as string) ?? "";
     const token = session?.githubToken ?? "";
+    const { toast } = useToast()
 
     const copyToClipboard = useCallback(async (text: string) => {
         try {
             await navigator.clipboard.writeText(text);
+            toast({ title: "Link Copied", description: "" })
         } catch { }
     }, []);
 
@@ -627,6 +631,7 @@ export default function RepoDetailPage() {
                     </Card>
                 </div>
             </div>
+            <Toaster />
         </PageShell>
     );
 }

@@ -28,8 +28,6 @@ export class UsersController {
         @Req() req,
         @Body() dto: CompleteOnboardingDto,
     ) {
-        console.log('HIddd:');
-        
         return this.usersService.completeOnboarding(
             req.user.userId,
             dto.goal,

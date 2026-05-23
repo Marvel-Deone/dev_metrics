@@ -44,8 +44,6 @@ export class UsersService {
             user.githubAccessToken,
         );
 
-        console.log(JSON.stringify(rawProfile, null, 2));
-
         return buildProfileResponse(rawProfile);
     }
 
@@ -110,8 +108,6 @@ export class UsersService {
     }
 
     async completeOnboarding(userId: string, goal: string) {
-        console.log('Hi, I got here');
-
         const user = await this.prisma.user.update({
             where: { id: userId },
             data: {

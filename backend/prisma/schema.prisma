@@ -8,30 +8,52 @@ datasource db {
   provider = "postgresql"
 }
 
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+enum WorkspaceRole {
+  ADMIN
+  MEMBER
+}
+
 model User {
-  id                  String               @id @default(uuid())
-  email               String?              @unique
-  githubId            String               @unique
+  id                  String   @id @default(uuid())
+  email               String?  @unique
+  githubId            String   @unique
   githubAccessToken   String?
   username            String?
   avatarUrl           String?
-  onboardingCompleted Boolean              @default(false)
+  onboardingCompleted Boolean  @default(false)
   goal                String?
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
-  repositories        Repository[]         @relation("UserRepositories")
-  metricSnapshots     UserMetricSnapshot[]
-  memberships         WorkspaceMember[]
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  repositories    Repository[]         @relation("UserRepositories")
+  metricSnapshots UserMetricSnapshot[]
+  memberships     WorkspaceMember[]
+
+  ownedWorkspaces     Workspace[]           @relation("WorkspaceOwner")
+  sentInvitations     WorkspaceInvitation[] @relation("InvitedBy")
+  acceptedInvitations WorkspaceInvitation[] @relation("InvitationUser")
 }
 
 model Workspace {
-  id                  String               @id @default(uuid())
-  name                String
-  description         String?
-  createdAt           DateTime             @default(now())
-  repositories        Repository[]
-  teamMetricSnapshots TeamMetricSnapshot[]
-  members             WorkspaceMember[]
+  id                   String                @id @default(uuid())
+  name                 String
+  description          String?
+  createdAt            DateTime              @default(now())
+  deletedAt            DateTime?
+  repositories         Repository[]
+  teamMetricSnapshots  TeamMetricSnapshot[]
+  members              WorkspaceMember[]
+  workspaceInvitations WorkspaceInvitation[]
+
+  ownerId String
+  owner   User   @relation("WorkspaceOwner", fields: [ownerId], references: [id], onDelete: Cascade)
 }
 
 model WorkspaceMember {
@@ -40,8 +62,8 @@ model WorkspaceMember {
   workspaceId String
   role        WorkspaceRole
   joinedAt    DateTime      @default(now())
-  user        User          @relation(fields: [userId], references: [id])
-  workspace   Workspace     @relation(fields: [workspaceId], references: [id])
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@unique([userId, workspaceId])
   @@index([workspaceId])
@@ -54,29 +76,45 @@ model Repository {
   owner           String
   isPrivate       Boolean
   workspaceId     String
+  lastSyncedAt    DateTime?
   createdAt       DateTime             @default(now())
+  deletedAt       DateTime?
   userId          String?
   pullRequests    PullRequest[]
   metricSnapshots RepoMetricSnapshot[]
   user            User?                @relation("UserRepositories", fields: [userId], references: [id])
-  workspace       Workspace            @relation(fields: [workspaceId], references: [id])
+  workspace       Workspace            @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 }
 
 model PullRequest {
-  id           String     @id @default(uuid())
-  githubPrId   String
-  repositoryId String
-  authorId     String
-  state        String
-  reviewers    String[]
-  openedAt     DateTime
-  mergedAt     DateTime?
-  closedAt     DateTime?
-  repository   Repository @relation(fields: [repositoryId], references: [id])
+  id                 String              @id @default(uuid())
+  githubPrId         String
+  repositoryId       String
+  authorId           String
+  state              String
+  openedAt           DateTime
+  mergedAt           DateTime?
+  closedAt           DateTime?
+  repository         Repository          @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  pullRequestReviews PullRequestReview[]
 
   @@index([repositoryId])
   @@index([openedAt])
   @@index([mergedAt])
+}
+
+model PullRequestReview {
+  id            String @id @default(uuid())
+  pullRequestId String
+  reviewerId    String
+
+  state       String
+  submittedAt DateTime
+
+  pullRequest PullRequest @relation(fields: [pullRequestId], references: [id])
+
+  @@index([pullRequestId])
+  @@index([reviewerId])
 }
 
 model UserMetricSnapshot {
@@ -89,7 +127,7 @@ model UserMetricSnapshot {
   reviews     Int
   activeHours Int
   afterHours  Int
-  user        User     @relation(fields: [userId], references: [id])
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, date])
   @@index([userId, date])
@@ -125,7 +163,30 @@ model RepoMetricSnapshot {
   @@index([repositoryId, date])
 }
 
-enum WorkspaceRole {
-  ADMIN
-  MEMBER
+model WorkspaceInvitation {
+  id    String @id @default(uuid())
+  email String
+  token String @unique
+
+  workspaceId String
+  invitedById String
+  userId      String?
+
+  role   WorkspaceRole    @default(MEMBER)
+  status InvitationStatus @default(PENDING)
+
+  expiresAt  DateTime
+  acceptedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  invitedBy User @relation("InvitedBy", fields: [invitedById], references: [id], onDelete: Cascade)
+
+  user User? @relation("InvitationUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([email])
+  @@index([token])
+  @@index([workspaceId])
 }

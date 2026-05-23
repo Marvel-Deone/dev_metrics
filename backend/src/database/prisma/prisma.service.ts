@@ -31,9 +31,6 @@
 // // //         const db = await this.$queryRawUnsafe(
 // // //             `SELECT current_database(), current_schema()`
 // // //         );
-// // //         console.log("CWD:", process.cwd());
-// // //         console.log("DATABASE_URL:", process.env.DATABASE_URL);
-// // //         console.log("CONNECTED TO:", db);
 // // //     }
 
 // // //     async onModuleDestroy() {
@@ -181,12 +178,10 @@
 
 //     async onModuleInit() {
 //         await this.$connect();
-//         console.log('Connected to database ✅');
 //     }
 
 //     async onModuleDestroy() {
 //         await this.$disconnect();
-//         console.log('Disconnected from database ⛔');
 //     }
 
 //     async enableShutdownHooks() {
@@ -233,18 +228,14 @@ export class PrismaService
 
     async onModuleInit() {
         await this.$connect();
-        console.log('Connected to database');
         const db = await this.$queryRawUnsafe(
             `SELECT current_database(), current_schema()`
         );
-        console.log("CWD:", process.cwd());
-        console.log("DATABASE_URL:", process.env.DATABASE_URL);
         console.log("CONNECTED TO:", db);
     }
 
     async onModuleDestroy() {
         await this.$disconnect();
         await this.pool.end();
-        console.log('Disconnected from database');
     }
 }

@@ -138,11 +138,10 @@ function InsightCard({ icon: Icon, title, value, description }: any) {
 // Main Dashboard
 function DashboardContent() {
     useBackendAuth();
-    const { theme, setTheme } = useTheme()
-    const { data: session, status } = useSession()
+    const { status } = useSession()
     const router = useRouter()
-    const { user, activeRepos = [], commitTrends, languages, pullRequests, contributionCalendar = [], loading, error, prActivity, recentActivity, mostActiveHour, } = useGitHubData() || {}
-    const username = session?.user?.name || ""
+    const { user, activeRepos = [], commitTrends, languages, pullRequests, contributionCalendar = [], loading, error, prActivity, recentActivity, mostActiveHour, insights} = useGitHubData() || {}
+    const username = user?.login || ""
     const { metrics } = useGithubMetrics()
     const languageData = toDashboardLanguages(languages ?? [])
 
@@ -153,12 +152,15 @@ function DashboardContent() {
         if (status === "authenticated") {
             const hasOnboarded = localStorage.getItem("devmetrics_onboarded")
             if (!hasOnboarded) {
-                router.push("/onboarding")
+                router.replace("/onboarding")
                 return
             }
             return
         }
-    }, [status, router])
+    }, [router])
+
+    console.log('user:', user);
+    
 
     const contributionMap = React.useMemo(() => {
         return new Map(
@@ -203,7 +205,7 @@ function DashboardContent() {
             <DashboardHeader />
             <main className="p-3 sm:p-4 md:p-6 max-w-7xl mx-auto">
                 <div className="mb-8 animate-fade-in">
-                    <h1 className="text-2xl font-bold text-foreground mb-1">Welcome back, {user?.name?.split(" ")[0]}</h1>
+                    <h1 className="text-2xl font-bold text-foreground mb-1">Welcome back, {user?.name?.split(" ")[0] || user?.login}</h1>
                     <p className="text-muted-foreground">Here's your engineering productivity overview</p>
                 </div>
 
@@ -228,7 +230,7 @@ function DashboardContent() {
                                 <CardDescription>Your commit activity this week</CardDescription>
                             </div>
                             <Badge variant="secondary" className="font-mono">
-                                {/* {commitTrends?.reduce((sum, c) => sum + (c.commits ?? 0), 0) ?? 0} commits */}
+                                {commitTrends?.reduce((sum, c) => sum + (c.commits ?? 0), 0) ?? 0} commits
                             </Badge>
                         </CardHeader>
                         <CardContent>
@@ -489,14 +491,14 @@ function DashboardContent() {
                     <InsightCard
                         icon={Calendar}
                         title="Peak Day"
-                        value="Wednesday"
+                        value={insights?.peakDay}
                         description="Highest contribution volume"
                     />
 
                     <InsightCard
                         icon={Code2}
                         title="Top Language"
-                        value="TypeScript"
+                        value={insights?.topLanguage}
                         description="Most used in the last year"
                     />
                 </div>

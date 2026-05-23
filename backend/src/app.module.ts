@@ -6,6 +6,9 @@ import { GithubModule } from './apis/github/github.module';
 import { ReposModule } from './apis/repos/repos.module';
 import { MetricsModule } from './apis/metrics/metrics.module';
 import { AnalyticsModule } from './apis/analytics/analytics.module';
+import { PrismaModule } from './database/prisma/prisma.module';
+import { WorkspacesModule } from './apis/workspaces/workspaces.module';
+import { MailModule } from './apis/mail/mail.module';
 
 @Module({
   imports: [
@@ -18,6 +21,9 @@ import { AnalyticsModule } from './apis/analytics/analytics.module';
     ReposModule,
     MetricsModule,
     AnalyticsModule,
+    PrismaModule,
+    WorkspacesModule,
+    MailModule,
   ],
   // controllers: [AppController],
   // providers: [AppService],

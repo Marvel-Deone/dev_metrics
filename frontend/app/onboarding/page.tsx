@@ -25,7 +25,8 @@ const OnboardingPage = () => {
     }
 
     const handleComplete = () => {
-        localStorage.setItem("devmetrics_onboarded", "true");
+        // localStorage.setItem("devmetrics_onboarded", "true");
+        // save
         router.push("/dashboard");
     }
 

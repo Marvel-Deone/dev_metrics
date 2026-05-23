@@ -1,6 +1,7 @@
+import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { VersioningType } from '@nestjs/common';
+import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
@@ -18,6 +19,14 @@ async function bootstrap() {
     credentials: true,
   });
 
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  )
+
   const config = new DocumentBuilder()
     .setTitle('DevMetrics API')
     .setDescription('Backend API for DevMetrics')
@@ -27,6 +36,7 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('_x6f/docs', app, document);
+  console.log(process.env.DATABASE_URL);
 
   await app.listen(process.env.PORT ?? 4000);
 }

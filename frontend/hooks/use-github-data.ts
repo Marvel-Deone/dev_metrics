@@ -9,6 +9,8 @@ export interface Repository {
   isPrivate: boolean;
   stargazerCount: number;
   forkCount: number;
+  languages: any
+  pushedAt: string
   updatedAt: string;
 }
 
@@ -85,35 +87,92 @@ export interface Data {
   recentActivity: RecentActivityItem[],
   activeHours: ActiveHour[],
   mostActiveHour: ActiveHour,
+  insights: {
+    peakDay: string,
+    topLanguage: string
+  },
   contributions: ContributionDay[]
 }
+
+// export function useGitHubData() {
+//   const [data, setData] = useState<Data>();
+//   const [loading, setLoading] = useState(true);
+//   const [error, setError] = useState<string | null>(null);
+
+//   useEffect(() => {
+//     async function fetchProfile() {
+//       try {
+//         setLoading(true);
+
+//         const res = await apiFetch(`/users/profile`);
+//         setData(res);
+//       } catch (err: any) {
+//         setError(err.message);
+//       } finally {
+//         setLoading(false);
+//       }
+//     }
+
+//     fetchProfile();
+//   }, []);
+
+//   return {
+//     user: data?.user,
+//     repos: data?.repos,
+//     activeRepos: data?.activeRepos,
+//     languages: data?.languages,
+//     commitTrends: data?.commitTrends,
+//     totalCommits7Days: data?.totalCommits7Days,
+//     pullRequests: data?.pullRequests,
+//     prActivity: data?.prActivity,
+//     recentActivity: data?.recentActivity,
+//     activeHours: data?.activeHours,
+//     mostActiveHour: data?.mostActiveHour,
+//     insights: data?.insights,
+//     contributionCalendar: data?.contributions,
+//     loading,
+//     error,
+
+//     lastSynced,
+//     isRefreshing,
+//     refetch: () => fetchProfile(true),
+//   };
+// }
+
 
 export function useGitHubData() {
   const [data, setData] = useState<Data>();
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastSynced, setLastSynced] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchProfile() {
-      try {
+  async function fetchProfile(isManualRefresh = false) {
+    try {
+      if (isManualRefresh) {
+        setIsRefreshing(true);
+      } else {
         setLoading(true);
-
-        const res = await apiFetch(`/users/profile`);
-
-        setData(res);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
       }
-    }
 
+      const res = await apiFetch(`/users/profile`);
+      setData(res);
+      setLastSynced(new Date());
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+      setIsRefreshing(false);
+    }
+  }
+
+  useEffect(() => {
     fetchProfile();
   }, []);
 
   return {
     user: data?.user,
-    repos: data?.repos,
+    repos: data?.repos ?? [],
     activeRepos: data?.activeRepos,
     languages: data?.languages,
     commitTrends: data?.commitTrends,
@@ -123,8 +182,14 @@ export function useGitHubData() {
     recentActivity: data?.recentActivity,
     activeHours: data?.activeHours,
     mostActiveHour: data?.mostActiveHour,
+    insights: data?.insights,
     contributionCalendar: data?.contributions,
+
     loading,
     error,
+
+    lastSynced,
+    isRefreshing,
+    refetch: () => fetchProfile(true),
   };
 }

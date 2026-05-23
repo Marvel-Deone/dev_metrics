@@ -1,6 +1,6 @@
 "use client"
 
-import { useSession, signOut } from "next-auth/react"
+import { signOut } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Github, LogOut, Moon, Sun, Settings, Activity, RefreshCw, Bell, ChevronDown, Menu, X } from "lucide-react"
 import { useTheme } from "next-themes"
@@ -11,7 +11,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
 import { useGitHubData } from "@/hooks/use-github-data"
 
 export function DashboardHeader() {
-  const { data: session } = useSession();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -42,22 +41,22 @@ export function DashboardHeader() {
           {/* Desktop nav */}
           <nav className="hidden lg:flex items-center gap-1">
             <Link href="/dashboard">
-              <Button variant="ghost" size="sm" className="text-foreground font-medium">
+              <Button variant="ghost" size="sm" className="text-foreground font-medium hover:text-white">
                 Overview
               </Button>
             </Link>
-            <Link href="/dashboard/repositories">
-              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+            <Link href="/dashboard/repo">
+              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground hover:text-white">
                 Repositories
               </Button>
             </Link>
             <Link href="/dashboard/analytics">
-              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground hover:text-white">
                 Analytics
               </Button>
             </Link>
             <Link href="/dashboard/goals">
-              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground hover:text-white">
                 Goals
               </Button>
             </Link>
@@ -102,10 +101,12 @@ export function DashboardHeader() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem className="cursor-pointer">
-                <Settings className="h-4 w-4 mr-2" />
-                Settings
-              </DropdownMenuItem>
+              <Link href="/settings">
+                <DropdownMenuItem className="cursor-pointer">
+                  <Settings className="h-4 w-4 mr-2" />
+                  Settings
+                </DropdownMenuItem>
+              </Link>
               <DropdownMenuSeparator />
               <DropdownMenuItem className="text-destructive cursor-pointer" onClick={() => signOut({ callbackUrl: "/auth/signin" })}>
                 <LogOut className="h-4 w-4 mr-2" />

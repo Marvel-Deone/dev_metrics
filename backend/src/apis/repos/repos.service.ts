@@ -6,14 +6,12 @@ export class ReposService {
   constructor(private authService: AuthService) { }
 
   async getRepoProfile(user: any, owner: string, repo: string) {
-    const githubToken = this.authService.getGithubToken(user.userId);
+    const githubToken = await this.authService.getGithubToken(user.userId);
 
     if (!githubToken) {
       throw new UnauthorizedException('GitHub token not found');
     }
-
-    /* Fetch Repo Details (REST) */
-
+    // Fetch Repo Details (REST) 
     const repoRes = await fetch(
       `https://api.github.com/repos/${owner}/${repo}`,
       {
@@ -130,6 +128,8 @@ export class ReposService {
       commits: history?.[`c${i}`]?.totalCount ?? 0,
       prs: timelineJson.data[`p${i}`]?.issueCount ?? 0,
     }));
+
+    console.log('timelineYe:', timeline);
 
     return {
       details: repoJson,

@@ -1,17 +1,12 @@
 import { signOut } from "next-auth/react";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import { getSession } from "next-auth/react";
 
-export async function apiFetch(
-  path: string,
-  options: RequestInit = {}
-) {
-  const token =
-    typeof window !== "undefined"
-      ? localStorage.getItem("backend_token")
-      : null;
+export async function apiFetch(path: string, options: RequestInit = {}) {
+  const session = await getSession();
 
-  const res = await fetch(`${API_URL}${path}`, {
+  const token = session?.backendToken;
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${path}`, {
     ...options,
     headers: {
       "Content-Type": "application/json",
@@ -20,13 +15,7 @@ export async function apiFetch(
     },
   });
 
-  // global unauthorize logic
   if (res.status === 401) {
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("backend_token");
-      // await signOut({ callbackUrl: "/auth/signin" });
-    }
-
     throw new Error("Unauthorized");
   }
 

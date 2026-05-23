@@ -28,7 +28,7 @@ const SignIn = () => {
           </CardHeader>
           <CardContent>
             <Button
-              onClick={() => signIn("github", { callbackUrl: "/dashboard" })}
+              onClick={() => signIn("github", { callbackUrl: "/redirect" })}
               className="w-full h-12 text-base font-semibold gap-2 bg-primary hover:bg-primary/90 transition-all duration-200"
             >
               <Github className="w-5 h-5" />

@@ -35,10 +35,7 @@ export const authOptions: NextAuthOptions = {
 
   callbacks: {
     // async jwt({ token, account }) {
-    //   console.log('Hi, I got here, this is account: ', account, 'token:', token);
-
     //   if (account?.access_token) {
-    //     console.log("GitHub access token exists");
 
     //     const res = await fetch(
     //       `${process.env.NEXT_PUBLIC_API_URL}/auth/github`,
@@ -51,11 +48,7 @@ export const authOptions: NextAuthOptions = {
     //       }
     //     );
 
-    //     console.log('callbackRes:', res);
-
     //     const data = await res.json();
-    //     console.log('callbackData:', data);
-
     //     token.githubToken = account.access_token;
     //     token.backendToken = data.accessToken;
     //     token.onboardingCompleted = data.onboardingCompleted;
@@ -70,11 +63,7 @@ export const authOptions: NextAuthOptions = {
     //     //     }),
     //     //   }
     //     // );
-    //     // console.log('ddffRe:', res);
-
     //     // const data = await res.json();
-
-    //     // console.log("NEST RESPONSE:", data);
 
     //     // token.githubToken = account.access_token;
     //     // token.backendToken = data.accessToken;

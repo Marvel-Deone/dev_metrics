@@ -9,17 +9,6 @@ export class GitHubClient {
       body: JSON.stringify({ query, variables }),
     });
 
-    // if (!res.ok) {
-    //   throw new Error('GitHub request failed');
-    // }
-
-    // const json = await res.json();
-
-    // if (json.errors) {
-    //   throw new Error('GitHub GraphQL error');
-    // }
-
-    // return json.data;
     const data = await res.json();
 
     if (!res.ok || data.errors) {

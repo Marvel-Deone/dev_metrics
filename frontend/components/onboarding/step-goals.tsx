@@ -52,16 +52,13 @@ const StepGoals = ({ onNext }: StepGoalsProps) => {
         goal: selected
       }),
     });
-    console.log('dddggf:', res)
-
     const data = await res.json()
 
     if (res) {
       localStorage.setItem('devmetrics_onboarded', data.onboardingCompleted)
     }
-    // await 
-    // onNext();
-
+    await 
+    onNext();
   }
 
   return (

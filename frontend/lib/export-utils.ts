@@ -4,8 +4,9 @@ export interface ExportData {
     name: string
     bio: string
     followers: number
-    public_repos: number
-    created_at: string
+    // public_repos: number
+    avatarUrl: string
+    // created_at: string
   } | null
   repos: Array<{
     name: string
@@ -72,9 +73,9 @@ export async function exportAsPDF(data: ExportData) {
     y += 7
     doc.text(`Followers: ${data.user.followers}`, 20, y)
     y += 7
-    doc.text(`Public Repositories: ${data.user.public_repos}`, 20, y)
+    // doc.text(`Public Repositories: ${data.user.public_repos}`, 20, y)
     y += 7
-    doc.text(`Member Since: ${new Date(data.user.created_at).toLocaleDateString()}`, 20, y)
+    // doc.text(`Member Since: ${new Date(data.user.created_at).toLocaleDateString()}`, 20, y)
     y += 15
   }
 

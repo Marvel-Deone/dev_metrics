@@ -84,10 +84,10 @@ export function buildProfileResponse(raw: any) {
         }))
         .sort((a, b) => b.percentage - a.percentage);
 
-    /* =========================
-       PR STATS
-    ========================= */
+    // MOST USED LANGUAGE
+    const topLanguage = languages[0]?.language ?? "Unknown";
 
+    //    PR STATS
     const prStats = {
         totalAuthored:
             user.contributionsCollection.pullRequestContributions.totalCount,
@@ -99,7 +99,7 @@ export function buildProfileResponse(raw: any) {
 
     const prWeeklyActivity = groupPRsByWeek(allPRs);
 
-    //    CONTRIBUTIONS (MAIN FIX)
+    //    CONTRIBUTIONS
     const contributions =
         user.contributionsCollection.contributionCalendar.weeks.flatMap(
             (w: any) => w.contributionDays
@@ -122,7 +122,25 @@ export function buildProfileResponse(raw: any) {
         0
     );
 
-    //    ACTIVE REPOS
+    const dayMap: Record<string, number> = {};
+
+    contributions.forEach((day: any) => {
+        const weekday = new Date(day.date).toLocaleDateString("en-US", {
+            weekday: "long",
+        });
+
+        dayMap[weekday] = (dayMap[weekday] || 0) + day.contributionCount;
+    });
+
+    // Find peak day
+    const peakDayEntry = Object.entries(dayMap).reduce(
+        (max, curr) => (curr[1] > max[1] ? curr : max),
+        ["Sunday", 0]
+    );
+
+    const peakDay = peakDayEntry[0];
+
+    // ACTIVE REPOS
     const activeRepos = user.repositories.nodes.slice(0, 5).map((repo: any) => ({
         name: repo.name,
         url: repo.url,
@@ -147,7 +165,7 @@ export function buildProfileResponse(raw: any) {
         count: peakHour.count,
     };
 
-    //    RECENT ACTIVITY
+    // RECENT ACTIVITY
     const recentActivity: any[] = [];
 
     // PRs
@@ -160,7 +178,7 @@ export function buildProfileResponse(raw: any) {
         });
     });
 
-    // Commits
+    // COMMITS
     user.repositories.nodes.forEach((repo: any) => {
         const commits = repo.defaultBranchRef?.target?.history?.nodes ?? [];
 
@@ -174,14 +192,14 @@ export function buildProfileResponse(raw: any) {
         });
     });
 
-    // Sort + limit
+    // SORT & LIMIT
     recentActivity.sort(
         (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
     );
 
     const recentActivityLimited = recentActivity.slice(0, 5);
 
-    //    FINAL RESPONSE
+    // FINAL RESPONSE
     return {
         user: {
             login: user.login,
@@ -195,6 +213,10 @@ export function buildProfileResponse(raw: any) {
         activeRepos,
 
         languages,
+        insights: {
+            peakDay,
+            topLanguage,
+        },
 
         pullRequests: prStats.totalAuthored,
         prActivity: {

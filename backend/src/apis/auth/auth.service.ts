@@ -2,6 +2,7 @@ import { forwardRef, Inject, Injectable, UnauthorizedException } from '@nestjs/c
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import { PrismaService } from 'src/database/prisma/prisma.service';
+import { InvitationStatus } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -19,39 +20,6 @@ export class AuthService {
     private prisma: PrismaService,
   ) { }
 
-  // async exchangeGithubToken(githubToken: string) {
-  //     const res = await fetch('https://api.github.com/user', {
-  //         headers: {
-  //             Authorization: `Bearer ${githubToken}`,
-  //         },
-  //     });
-
-  //     if (!res.ok) {
-  //         throw new UnauthorizedException('Invalid GitHub token');
-  //     }
-
-  //     const githubUser = await res.json();
-
-  //     // Store token + login
-  //     this.githubSessions.set(githubUser.id, {
-  //         token: githubToken,
-  //         login: githubUser.login,
-  //     });
-
-  //     const payload = {
-  //         sub: githubUser.id,
-  //     };
-
-  //     return {
-  //         accessToken: this.jwtService.sign(payload),
-  //         user: {
-  //             id: githubUser.id,
-  //             login: githubUser.login,
-  //             avatarUrl: githubUser.avatar_url,
-  //         },
-  //     };
-  // }
-
   async exchangeGithubToken(githubToken: string) {
     const res = await fetch('https://api.github.com/user', {
       headers: {
@@ -64,8 +32,6 @@ export class AuthService {
     }
 
     const githubUser = await res.json();
-    console.log('logg:', githubUser);
-
 
     // Create or get user in DB
     const user = await this.usersService.createUser(
@@ -76,12 +42,14 @@ export class AuthService {
       githubToken
     );
 
+    await this.autoAcceptInvitations(
+      user.data.id,
+      user.data.email,
+    );
+
     const accessToken = this.jwtService.sign({
       userId: user.data.id, // internal UUID only
     });
-
-    console.log('fkkuserg:', user);
-
 
     return {
       accessToken,
@@ -89,6 +57,52 @@ export class AuthService {
     };
   }
 
+
+  private async autoAcceptInvitations(
+    userId: string,
+    email?: string | null,
+  ) {
+    if (!email) return;
+    const pendingInvitations =
+      await this.prisma.workspaceInvitation.findMany({
+        where: {
+          email,
+          status: InvitationStatus.PENDING,
+          expiresAt: {
+            gt: new Date(),
+          },
+        },
+      });
+
+    for (const invitation of pendingInvitations) {
+      const exists =
+        await this.prisma.workspaceMember.findFirst({
+          where: {
+            workspaceId: invitation.workspaceId,
+            userId,
+          },
+        });
+
+      if (!exists) {
+        await this.prisma.workspaceMember.create({
+          data: {
+            workspaceId: invitation.workspaceId,
+            userId,
+            role: invitation.role,
+          },
+        });
+      }
+
+      await this.prisma.workspaceInvitation.update({
+        where: { id: invitation.id },
+        data: {
+          status: InvitationStatus.ACCEPTED,
+          acceptedAt: new Date(),
+          userId,
+        },
+      });
+    }
+  }
   // getGithubToken(userId: string) {
   //   return this.githubSessions.get(userId)?.token;
   // }
